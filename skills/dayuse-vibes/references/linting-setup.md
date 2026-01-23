@@ -15,7 +15,7 @@ Le linting :
 ## Installation
 
 ```bash
-npm install -D eslint @eslint/js typescript-eslint prettier eslint-config-prettier eslint-plugin-import
+npm install -D eslint @eslint/js typescript-eslint prettier eslint-config-prettier eslint-plugin-import eslint-plugin-security eslint-plugin-no-secrets
 ```
 
 ---
@@ -29,6 +29,9 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import importPlugin from 'eslint-plugin-import';
+import securityPlugin from 'eslint-plugin-security';
+// @ts-expect-error - no types available
+import noSecretsPlugin from 'eslint-plugin-no-secrets';
 
 export default tseslint.config(
   eslint.configs.recommended,
@@ -43,8 +46,16 @@ export default tseslint.config(
     },
     plugins: {
       import: importPlugin,
+      security: securityPlugin,
+      'no-secrets': noSecretsPlugin,
     },
     rules: {
+      // === SÉCURITÉ ===
+      'security/detect-object-injection': 'warn',
+      'security/detect-non-literal-regexp': 'error',
+      'security/detect-unsafe-regex': 'error',
+      'no-secrets/no-secrets': 'error',
+
       // === CRITIQUE : PAS DE ANY ===
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unsafe-assignment': 'error',

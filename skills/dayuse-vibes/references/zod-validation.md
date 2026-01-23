@@ -51,7 +51,8 @@ const passwordSchema = z.string().min(8).regex(/[A-Z]/, 'Doit contenir une majus
 
 // Nombres
 const numberSchema = z.number();
-const positiveSchema = z.number().positive();
+const positiveSchema = z.number().positive(); // Recommandé pour IDs, quantités
+const priceSchema = z.number().nonnegative(); // Recommandé pour prix
 const intSchema = z.number().int();
 const rangeSchema = z.number().min(0).max(100);
 
@@ -292,6 +293,37 @@ const OptionalSchema = z.preprocess(
   (val) => (val === null ? undefined : val),
   z.string().optional()
 );
+```
+
+---
+
+## Sanitisation et Sécurité
+
+### Nettoyage des Entrées
+
+Utiliser `transform` ou `regex` pour nettoyer les entrées dangereuses (XSS, injections).
+
+```typescript
+// Enlever les balises HTML (XSS)
+const BioSchema = z.string()
+  .transform((val) => val.replace(/<[^>]*>/g, ''));
+
+// Whitelist de caractères (SQL Injection protection basique)
+const UsernameSchema = z.string()
+  .regex(/^[a-zA-Z0-9_-]+$/, 'Caractères spéciaux interdits');
+```
+
+### Sécuriser les Nombres
+
+Pour éviter les failles de logique métier (ex: acheter -5 articles pour être crédité), TOUJOURS restreindre les nombres.
+
+```typescript
+// ❌ DANGEREUX
+const QuantitySchema = z.number();
+
+// ✅ SÉCURISÉ
+const QuantitySchema = z.number().int().positive(); // > 0
+const PriceSchema = z.number().nonnegative(); // >= 0
 ```
 
 ---

@@ -269,6 +269,50 @@ describe('CreateUserUseCase', () => {
 
 ---
 
+## Tests de Sécurité (Abuse Cases)
+
+Ne pas tester uniquement ce que l'utilisateur DOIT faire, mais ce qu'il NE DOIT PAS pouvoir faire.
+
+### 1. Tests d'Autorisation
+
+Vérifier qu'un utilisateur ne peut pas accéder aux données d'un autre.
+
+```typescript
+it('should fail when accessing other user data', async () => {
+  // Arrange
+  const user1Id = 'user-1';
+  const targetId = 'user-2';
+  
+  // Act
+  const result = await useCase.execute({ currentUserId: user1Id, targetId });
+  
+  // Assert
+  expect(result.success).toBe(false);
+  if (!result.success) {
+    expect(result.error.type).toBe('UNAUTHORIZED');
+  }
+});
+```
+
+### 2. Tests d'Injection et Données Malveillantes
+
+Vérifier la résistance aux entrées dangereuses.
+
+```typescript
+it('should reject malicious HTML input (XSS)', () => {
+  const maliciousInput = '<script>alert("xss")</script>';
+  const result = schema.safeParse(maliciousInput);
+  expect(result.success).toBe(false);
+});
+
+it('should reject negative quantities', () => {
+  const result = ProductSchema.safeParse({ quantity: -5 });
+  expect(result.success).toBe(false);
+});
+```
+
+---
+
 ## Assertions Courantes
 
 ```typescript
@@ -362,6 +406,8 @@ Pour chaque fonctionnalité, tester :
 - [ ] Cas limites (chaînes vides, zéro, null)
 - [ ] Cas d'erreur (entrée invalide, données manquantes)
 - [ ] Conditions aux limites (valeurs max/min)
+- [ ] Tests d'autorisation (qui a le droit de faire quoi)
+- [ ] Tests d'injection de données malveillantes
 
 ### Exemples de Cas à Tester
 

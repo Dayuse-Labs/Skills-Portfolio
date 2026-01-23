@@ -18,6 +18,7 @@ Lors de la génération de code, respecter OBLIGATOIREMENT :
 5. **Linting obligatoire** - Le code doit passer ESLint et Prettier
 6. **Validation Zod** - Valider les entrées externes avec Zod
 7. **Pattern Result** - Utiliser Result<T, E> au lieu de throw/catch
+8. **Sécurité par défaut** - Audit de sécurité, validation des autorisations et aucun secret en clair
 
 ---
 
@@ -163,6 +164,57 @@ if (!result.success) {
 // Utiliser result.data
 ```
 
+
+---
+
+## Sécurité et Autorisations (Zero Trust)
+
+L'IA doit adopter une approche **Zero Trust** : ne jamais faire confiance aux entrées ni à l'état implicite.
+
+### 1. Vérification Systématique des Autorisations
+
+Toute action métier doit vérifier **QUI** fait l'action et s'il en a le **DROIT**.
+
+```typescript
+// ❌ MAUVAIS : On suppose que l'utilisateur a le droit car il est authentifié
+function deleteProject(projectId: string, user: User) {
+  return projectRepo.delete(projectId);
+}
+
+// ✅ BON : Vérification explicite de la permission (Business Logic)
+function deleteProject(projectId: string, user: User): Result<void, AppError> {
+  const project = await projectRepo.findById(projectId);
+  
+  // Vérification d'appartenance ou de rôle
+  if (project.ownerId !== user.id && user.role !== 'ADMIN') {
+    return err(new UnauthorizedError("Vous n'avez pas les droits de suppression sur ce projet"));
+  }
+  
+  return projectRepo.delete(projectId);
+}
+```
+
+### 2. Pas de Secrets en Clair
+
+Ne JAMAIS écrire de clés API, tokens, mots de passe ou certificats dans le code.
+
+```typescript
+// ❌ INTERDIT
+const API_KEY = "sk-1234567890abcdef";
+
+// ✅ REQUIS
+const API_KEY = process.env.OPENAI_API_KEY;
+```
+
+### 3. Sanitisation des Entrées
+
+Ne jamais insérer de données utilisateur brutes dans :
+- Du HTML (Risque XSS)
+- Des requêtes SQL (Risque Injection SQL)
+- Des commandes système (Risque Command Injection)
+
+Utiliser Zod pour valider le format et des bibliothèques d'échappement pour l'affichage.
+
 ---
 
 ## Tests avec Vitest
@@ -305,6 +357,7 @@ TOUJOURS :
 ✓ Structure DDD
 ✓ Zod pour les entrées externes
 ✓ Result pour les erreurs métier
+✓ Vérification des permissions
 
 JAMAIS :
 ✗ Type any
@@ -313,4 +366,5 @@ JAMAIS :
 ✗ Logique infra dans le domaine
 ✗ throw/catch pour erreurs métier
 ✗ Données non validées
+✗ Secrets/Clés API en dur
 ```
