@@ -11,7 +11,7 @@
 
 ---
 
-*A central hub for coding skills, rules, and standards designed to ensure code quality, consistency, and adherence to company best practices across all your AI-assisted development.*
+*A central hub for coding skills, rules, and standards designed to ensure code quality, consistency, security, and adherence to company best practices across all your AI-assisted development.*
 
 </div>
 
