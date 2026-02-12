@@ -1,24 +1,24 @@
-# Guide Architecture DDD
+# DDD Architecture Guide
 
-Ce guide explique les concepts DDD de manière simple pour les non-développeurs.
+This guide explains DDD concepts in a simple way for non-developers.
 
-## Pourquoi DDD ?
+## Why DDD?
 
-DDD (Domain-Driven Design) aide à organiser le code pour que :
-- Les règles métier soient centralisées (couche domain)
-- Les détails techniques ne polluent pas la logique métier
-- Le code soit facile à comprendre et maintenir
-- Les changements dans une zone n'affectent pas les autres
+DDD (Domain-Driven Design) helps organize code so that:
+- Business rules are centralized (Domain Layer)
+- Technical details do not pollute business logic
+- Code is easy to understand and maintain
+- Changes in one area do not affect others
 
 ---
 
-## Les 4 Couches Expliquées
+## The 4 Layers Explained
 
-### 1. Domain Layer - Le Cœur de l'Application
+### 1. Domain Layer - The Heart of the Application
 
-C'est le "livre de règles" de votre métier. Elle contient :
+This is the "rule book" of your business. It contains:
 
-**Entités** - Objets avec une identité unique qui compte
+**Entities** - Objects with a unique identity that matters
 
 ```typescript
 // src/domain/entities/user.ts
@@ -56,10 +56,10 @@ export class User {
   changeName(newName: string): Result<void, string> {
     const trimmed = newName.trim();
     if (trimmed.length < 2) {
-      return err('Le nom doit faire au moins 2 caractères');
+      return err('Name must be at least 2 characters');
     }
     if (trimmed.length > 100) {
-      return err('Le nom ne peut pas dépasser 100 caractères');
+      return err('Name cannot exceed 100 characters');
     }
     this._name = trimmed;
     return ok(undefined);
@@ -81,7 +81,7 @@ export class User {
 }
 ```
 
-**Value Objects** - Objets définis par leurs valeurs, pas leur identité
+**Value Objects** - Objects defined by their values, not their identity
 
 ```typescript
 // src/domain/value-objects/email.ts
@@ -94,20 +94,20 @@ export class Email {
     const normalized = email.toLowerCase().trim();
 
     if (!normalized) {
-      return err('L\'email ne peut pas être vide');
+      return err('Email cannot be empty');
     }
 
     if (!normalized.includes('@')) {
-      return err('L\'email doit contenir @');
+      return err('Email must contain @');
     }
 
     const parts = normalized.split('@');
     if (parts.length !== 2 || !parts[0] || !parts[1]) {
-      return err('Format d\'email invalide');
+      return err('Invalid email format');
     }
 
     if (!parts[1].includes('.')) {
-      return err('Le domaine doit contenir un point');
+      return err('Domain must contain a dot');
     }
 
     return ok(new Email(normalized));
@@ -127,7 +127,7 @@ export class Email {
 }
 ```
 
-**Interfaces Repository** - Contrats pour l'accès aux données (PAS d'implémentation ici)
+**Repository Interfaces** - Contracts for data access (NO implementation here)
 
 ```typescript
 // src/domain/repositories/user-repository.interface.ts
@@ -144,9 +144,9 @@ export interface UserRepository {
 
 ---
 
-### 2. Application Layer - L'Orchestrateur
+### 2. Application Layer - The Orchestrator
 
-Contient les use cases qui coordonnent les opérations métier :
+Contains the use cases that coordinate business operations:
 
 ```typescript
 // src/application/use-cases/create-user.use-case.ts
@@ -156,7 +156,7 @@ import { Email } from '../../domain/value-objects/email';
 import { UserRepository } from '../../domain/repositories/user-repository.interface';
 import { Result, ok, err } from '../../shared/result';
 
-// Schéma de validation Zod
+// Zod validation schema
 export const CreateUserSchema = z.object({
   name: z.string().min(2).max(100),
   email: z.string().email(),
@@ -182,7 +182,7 @@ export class CreateUserUseCase {
   async execute(
     rawInput: unknown
   ): Promise<Result<CreateUserOutput, CreateUserError>> {
-    // 1. Valider l'entrée avec Zod
+    // 1. Validate input with Zod
     const parseResult = CreateUserSchema.safeParse(rawInput);
     if (!parseResult.success) {
       return err({
@@ -192,13 +192,13 @@ export class CreateUserUseCase {
     }
     const input = parseResult.data;
 
-    // 2. Créer le value object Email
+    // 2. Create the Email value object
     const emailResult = Email.create(input.email);
     if (!emailResult.success) {
       return err({ type: 'INVALID_EMAIL', message: emailResult.error });
     }
 
-    // 3. Vérifier les règles métier
+    // 3. Check business rules
     const exists = await this.userRepository.existsByEmail(
       emailResult.data.value
     );
@@ -206,7 +206,7 @@ export class CreateUserUseCase {
       return err({ type: 'EMAIL_EXISTS', email: input.email });
     }
 
-    // 4. Créer l'entité
+    // 4. Create the entity
     const user = new User(
       crypto.randomUUID(),
       input.name,
@@ -214,10 +214,10 @@ export class CreateUserUseCase {
       new Date()
     );
 
-    // 5. Persister
+    // 5. Persist
     await this.userRepository.save(user);
 
-    // 6. Retourner le DTO de sortie
+    // 6. Return the output DTO
     return ok({
       id: user.id,
       name: user.name,
@@ -230,9 +230,9 @@ export class CreateUserUseCase {
 
 ---
 
-### 3. Infrastructure Layer - Les Détails Techniques
+### 3. Infrastructure Layer - The Technical Details
 
-Implémente les interfaces définies dans le domaine :
+Implements the interfaces defined in the domain:
 
 ```typescript
 // src/infrastructure/repositories/postgres-user.repository.ts
@@ -290,7 +290,7 @@ export class PostgresUserRepository implements UserRepository {
   private toDomain(row: UserRow): User {
     const emailResult = Email.create(row.email);
     if (!emailResult.success) {
-      throw new Error(`Email invalide en BDD: ${row.email}`);
+      throw new Error(`Invalid email in database: ${row.email}`);
     }
     return new User(row.id, row.name, emailResult.data, row.created_at);
   }
@@ -299,9 +299,9 @@ export class PostgresUserRepository implements UserRepository {
 
 ---
 
-### 4. Interfaces Layer - Points d'Entrée
+### 4. Interfaces Layer - Entry Points
 
-Comment les utilisateurs/systèmes interagissent avec l'application :
+How users/systems interact with the application:
 
 ```typescript
 // src/interfaces/http/controllers/user.controller.ts
@@ -321,7 +321,7 @@ export class UserController {
           return;
         case 'EMAIL_EXISTS':
           res.status(409).json({
-            error: `L'email ${result.error.email} est déjà utilisé`,
+            error: `Email ${result.error.email} is already in use`,
           });
           return;
         case 'INVALID_EMAIL':
@@ -337,7 +337,7 @@ export class UserController {
 
 ---
 
-## Organisation des Fichiers
+## File Organization
 
 ```
 src/
@@ -394,62 +394,62 @@ src/
 
 ---
 
-## Erreurs Courantes à Éviter
+## Common Mistakes to Avoid
 
-### 1. Code BDD dans la couche domaine
+### 1. Database code in the Domain Layer
 
 ```typescript
-// ❌ MAUVAIS - L'entité appelle la BDD
+// BAD - The entity calls the database
 class User {
   async save(): Promise<void> {
     await db.query('INSERT INTO users...');
   }
 }
 
-// ✅ BON - L'entité est pure, le repository gère la persistence
+// GOOD - The entity is pure, the repository handles persistence
 class User {
-  // Logique métier uniquement
+  // Business logic only
 }
 
-// Dans le use case
+// In the use case
 await userRepository.save(user);
 ```
 
-### 2. Logique métier dans les contrôleurs
+### 2. Business logic in controllers
 
 ```typescript
-// ❌ MAUVAIS - Validation et règles dans le contrôleur HTTP
+// BAD - Validation and rules in the HTTP controller
 app.post('/users', async (req, res) => {
   if (req.body.name.length < 2) {
-    return res.status(400).json({ error: 'Nom trop court' });
+    return res.status(400).json({ error: 'Name too short' });
   }
   const existing = await db.query('SELECT * FROM users WHERE email = ?', [
     req.body.email,
   ]);
   if (existing) {
-    return res.status(409).json({ error: 'Email déjà utilisé' });
+    return res.status(409).json({ error: 'Email already in use' });
   }
   // ...
 });
 
-// ✅ BON - Toute la logique dans le use case
+// GOOD - All logic in the use case
 app.post('/users', async (req, res) => {
   const result = await createUserUseCase.execute(req.body);
-  // Juste gérer la réponse HTTP
+  // Just handle the HTTP response
 });
 ```
 
-### 3. Dépendances directes entre couches
+### 3. Direct dependencies between layers
 
 ```typescript
-// ❌ MAUVAIS - Le domaine importe de l'infrastructure
+// BAD - The domain imports from the infrastructure
 import { PostgresUserRepository } from '../../infrastructure/repositories';
 
 class User {
   constructor(private repo: PostgresUserRepository) {}
 }
 
-// ✅ BON - Le domaine définit l'interface, l'infrastructure l'implémente
+// GOOD - The domain defines the interface, the infrastructure implements it
 // domain/repositories/user-repository.interface.ts
 export interface UserRepository {
   save(user: User): Promise<void>;
@@ -461,17 +461,17 @@ export class PostgresUserRepository implements UserRepository {
 }
 ```
 
-### 4. Sauter la couche application
+### 4. Skipping the Application Layer
 
 ```typescript
-// ❌ MAUVAIS - Le contrôleur appelle directement le domaine
+// BAD - The controller calls the domain directly
 app.post('/users', async (req, res) => {
   const user = new User(id, req.body.name, email);
   await userRepository.save(user);
   res.json(user);
 });
 
-// ✅ BON - Le contrôleur appelle le use case
+// GOOD - The controller calls the use case
 app.post('/users', async (req, res) => {
   const result = await createUserUseCase.execute(req.body);
   // ...
@@ -480,13 +480,13 @@ app.post('/users', async (req, res) => {
 
 ---
 
-## Quand Utiliser Quoi
+## When to Use What
 
-| Situation | Couche | Exemple |
-|-----------|--------|---------|
-| Règle métier | Domain | "Un utilisateur doit avoir un email valide" |
-| Validation de format | Domain (Value Object) | Email.create() valide le format |
-| Orchestration | Application | CreateUserUseCase coordonne la création |
-| Accès BDD | Infrastructure | PostgresUserRepository.save() |
-| Réponse HTTP | Interfaces | UserController.create() |
-| Validation d'entrée | Application | Zod schema dans le use case |
+| Situation | Layer | Example |
+|-----------|-------|---------|
+| Business rule | Domain | "A user must have a valid email" |
+| Format validation | Domain (Value Object) | Email.create() validates the format |
+| Orchestration | Application | CreateUserUseCase coordinates the creation |
+| Database access | Infrastructure | PostgresUserRepository.save() |
+| HTTP response | Interfaces | UserController.create() |
+| Input validation | Application | Zod schema in the use case |

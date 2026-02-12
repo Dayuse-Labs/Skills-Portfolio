@@ -1,6 +1,6 @@
 # Doctrine ORM Patterns
 
-## Entités avec Attributs
+## Entities with Attributes
 
 ```php
 <?php
@@ -76,7 +76,7 @@ class User
 }
 ```
 
-## Value Objects Embeddable
+## Embeddable Value Objects
 
 ```php
 <?php
@@ -120,7 +120,7 @@ final readonly class Money
     }
 }
 
-// Utilisation dans une entité
+// Usage in an entity
 #[ORM\Entity]
 class Booking
 {
@@ -158,12 +158,12 @@ class Hotel
     #[ORM\Column(length: 255)]
     private string $name;
 
-    // OneToMany - côté inverse
+    // OneToMany - inverse side
     /** @var Collection<int, Room> */
     #[ORM\OneToMany(targetEntity: Room::class, mappedBy: 'hotel', cascade: ['persist', 'remove'])]
     private Collection $rooms;
 
-    // ManyToMany avec table pivot
+    // ManyToMany with join table
     /** @var Collection<int, Tag> */
     #[ORM\ManyToMany(targetEntity: Tag::class)]
     #[ORM\JoinTable(name: 'hotel_tags')]
@@ -208,7 +208,7 @@ class Room
     #[ORM\Column]
     private ?int $id = null;
 
-    // ManyToOne - côté propriétaire
+    // ManyToOne - owning side
     #[ORM\ManyToOne(targetEntity: Hotel::class, inversedBy: 'rooms')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Hotel $hotel = null;
@@ -230,7 +230,7 @@ class Room
 
 declare(strict_types=1);
 
-// Interface dans le domaine
+// Interface in the domain layer
 namespace App\Domain\Repository;
 
 use App\Entity\User;
@@ -245,7 +245,7 @@ interface UserRepositoryInterface
     public function remove(User $user): void;
 }
 
-// Implémentation Doctrine dans l'infrastructure
+// Doctrine implementation in the infrastructure layer
 namespace App\Infrastructure\Repository;
 
 use App\Domain\Repository\UserRepositoryInterface;
@@ -300,7 +300,7 @@ final class DoctrineUserRepository extends ServiceEntityRepository implements Us
 }
 ```
 
-## QueryBuilder Avancé
+## Advanced QueryBuilder
 
 ```php
 <?php
@@ -322,7 +322,7 @@ final class DoctrineBookingRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('b')
             ->join('b.hotel', 'h')
-            ->addSelect('h'); // Eager load pour éviter N+1
+            ->addSelect('h'); // Eager load to avoid N+1
 
         if ($criteria->hotelId !== null) {
             $qb->andWhere('h.id = :hotelId')
@@ -356,16 +356,16 @@ final class DoctrineBookingRepository extends ServiceEntityRepository
 ## Migrations
 
 ```bash
-# Générer une migration à partir des changements d'entité
+# Generate a migration from entity changes
 php bin/console doctrine:migrations:diff
 
-# Appliquer les migrations
+# Apply migrations
 php bin/console doctrine:migrations:migrate
 
-# Revenir en arrière
+# Roll back
 php bin/console doctrine:migrations:migrate prev
 
-# Statut des migrations
+# Migration status
 php bin/console doctrine:migrations:status
 ```
 
@@ -408,22 +408,22 @@ final class Version20240101000000 extends AbstractMigration
 }
 ```
 
-## Performance Doctrine
+## Doctrine Performance
 
-### Éviter le N+1 Problem
+### Avoiding the N+1 Problem
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-// ❌ N+1 : 1 requête pour les hôtels + N requêtes pour les rooms
+// N+1: 1 query for hotels + N queries for rooms
 $hotels = $hotelRepository->findAll();
 foreach ($hotels as $hotel) {
-    $hotel->getRooms(); // Lazy load = 1 requête par hôtel
+    $hotel->getRooms(); // Lazy load = 1 query per hotel
 }
 
-// ✅ Eager loading avec JOIN
+// Eager loading with JOIN
 $hotels = $hotelRepository->createQueryBuilder('h')
     ->leftJoin('h.rooms', 'r')
     ->addSelect('r')
@@ -438,7 +438,7 @@ $hotels = $hotelRepository->createQueryBuilder('h')
 
 declare(strict_types=1);
 
-// ✅ Traitement par lots pour les grosses volumétries
+// Batch processing for large volumes
 $batchSize = 100;
 $i = 0;
 
@@ -459,7 +459,7 @@ $em->flush();
 $em->clear();
 ```
 
-### Cache de Second Niveau
+### Second Level Cache
 
 ```yaml
 # config/packages/doctrine.yaml
@@ -481,31 +481,31 @@ doctrine:
 ```php
 <?php
 
-// Activer le cache sur une entité
+// Enable cache on an entity
 #[ORM\Entity]
 #[ORM\Cache(usage: 'READ_ONLY')]
 class Country
 {
-    // Entité rarement modifiée → cache efficace
+    // Rarely modified entity -> effective cache
 }
 ```
 
 ## Quick Reference
 
-| Opération | Commande |
-|-----------|----------|
-| Générer migration | `php bin/console doctrine:migrations:diff` |
-| Appliquer migration | `php bin/console doctrine:migrations:migrate` |
-| Valider le schéma | `php bin/console doctrine:schema:validate` |
-| Créer la BDD | `php bin/console doctrine:database:create` |
-| Charger fixtures | `php bin/console doctrine:fixtures:load` |
+| Operation | Command |
+|-----------|---------|
+| Generate migration | `php bin/console doctrine:migrations:diff` |
+| Apply migration | `php bin/console doctrine:migrations:migrate` |
+| Validate schema | `php bin/console doctrine:schema:validate` |
+| Create database | `php bin/console doctrine:database:create` |
+| Load fixtures | `php bin/console doctrine:fixtures:load` |
 
-| Pattern | Quand l'utiliser |
-|---------|-----------------|
+| Pattern | When to use |
+|---------|-------------|
 | Embeddable | Value objects (Money, Address, DateRange) |
-| Repository interface | Découplage domaine / infrastructure |
-| QueryBuilder | Requêtes dynamiques avec critères |
-| DQL | Requêtes complexes avec jointures |
-| Native SQL | Performance critique, requêtes spécifiques MySQL |
-| Batch processing | Import/export de données massives |
-| Second level cache | Entités rarement modifiées (pays, catégories) |
+| Repository interface | Domain / infrastructure decoupling |
+| QueryBuilder | Dynamic queries with criteria |
+| DQL | Complex queries with joins |
+| Native SQL | Critical performance, MySQL-specific queries |
+| Batch processing | Massive data import/export |
+| Second level cache | Rarely modified entities (countries, categories) |

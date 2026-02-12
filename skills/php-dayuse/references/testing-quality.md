@@ -1,6 +1,6 @@
-# Tests & Assurance Qualité
+# Testing & Quality Assurance
 
-## PHPUnit avec Types Stricts
+## PHPUnit with Strict Types
 
 ```php
 <?php
@@ -138,7 +138,7 @@ final class EmailValidatorTest extends TestCase
 }
 ```
 
-## Tests Fonctionnels Symfony
+## Symfony Functional Tests
 
 ```php
 <?php
@@ -217,7 +217,7 @@ final class UserControllerTest extends WebTestCase
 }
 ```
 
-## Tests de Repositories Doctrine
+## Doctrine Repository Tests
 
 ```php
 <?php
@@ -242,7 +242,7 @@ final class UserRepositoryTest extends KernelTestCase
         $this->em = self::getContainer()->get(EntityManagerInterface::class);
         $this->repository = self::getContainer()->get(DoctrineUserRepository::class);
 
-        // Nettoyer la base de test
+        // Clean up the test database
         $this->em->getConnection()->executeStatement('DELETE FROM users');
     }
 
@@ -258,7 +258,7 @@ final class UserRepositoryTest extends KernelTestCase
         $user = new User('test@example.com', 'hashed_password');
         $this->repository->save($user);
 
-        $this->em->clear(); // Forcer un reload depuis la BDD
+        $this->em->clear(); // Force a reload from the database
 
         $found = $this->repository->findByEmail('test@example.com');
 
@@ -292,7 +292,7 @@ parameters:
     tmpDir: var/cache/phpstan
 
     ignoreErrors:
-        # Ignorer les méthodes magiques Doctrine si nécessaire
+        # Ignore Doctrine magic methods if needed
         - '#Call to an undefined method Doctrine\\ORM\\EntityRepository#'
 
     type_coverage:
@@ -307,7 +307,7 @@ includes:
     - vendor/phpstan/phpstan-doctrine/extension.neon
 ```
 
-## PHPStan Annotations pour Generics
+## PHPStan Annotations for Generics
 
 ```php
 <?php
@@ -431,24 +431,24 @@ final readonly class Result
 
 ## Quick Reference
 
-| Outil | Fonction | Commande |
-|-------|----------|----------|
-| PHPUnit | Tests unitaires/fonctionnels | `./vendor/bin/phpunit` |
-| PHPStan | Analyse statique | `./vendor/bin/phpstan analyse` |
-| PHP-CS-Fixer | Style de code | `./vendor/bin/php-cs-fixer fix` |
-| PHPMD | Détection de code smell | `./vendor/bin/phpmd src text cleancode` |
+| Tool | Purpose | Command |
+|------|---------|---------|
+| PHPUnit | Unit/functional tests | `./vendor/bin/phpunit` |
+| PHPStan | Static analysis | `./vendor/bin/phpstan analyse` |
+| PHP-CS-Fixer | Code style | `./vendor/bin/php-cs-fixer fix` |
+| PHPMD | Code smell detection | `./vendor/bin/phpmd src text cleancode` |
 
-| Type de test | Répertoire | Scope |
-|-------------|------------|-------|
-| Unit | `tests/Unit/` | Classes isolées, mocks |
-| Integration | `tests/Integration/` | Repositories, services avec BDD |
-| Functional | `tests/Functional/` | Endpoints HTTP, workflow complet |
+| Test type | Directory | Scope |
+|-----------|-----------|-------|
+| Unit | `tests/Unit/` | Isolated classes, mocks |
+| Integration | `tests/Integration/` | Repositories, services with DB |
+| Functional | `tests/Functional/` | HTTP endpoints, full workflow |
 
 | Assertion | PHPUnit |
 |-----------|---------|
-| Égalité stricte | `$this->assertSame($expected, $actual)` |
+| Strict equality | `$this->assertSame($expected, $actual)` |
 | Type | `$this->assertInstanceOf(User::class, $result)` |
-| Contenu | `$this->assertContains($item, $array)` |
+| Content | `$this->assertContains($item, $array)` |
 | Exception | `$this->expectException(\DomainException::class)` |
-| Comptage | `$this->assertCount(3, $items)` |
+| Count | `$this->assertCount(3, $items)` |
 | Null | `$this->assertNull($value)` |

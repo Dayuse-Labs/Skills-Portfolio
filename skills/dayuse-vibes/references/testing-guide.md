@@ -1,28 +1,28 @@
-# Guide de Tests avec Vitest
+# Testing Guide with Vitest
 
-Ce guide explique comment écrire des tests pour les vibe coders.
+This guide explains how to write tests for vibe coders.
 
-## Pourquoi Tester ?
+## Why Test?
 
-Les tests sont comme un filet de sécurité. Ils :
-- Attrapent les bugs avant les utilisateurs
-- Permettent de modifier le code en confiance
-- Documentent comment le code doit fonctionner
-- Économisent du temps à long terme
+Tests are like a safety net. They:
+- Catch bugs before users do
+- Allow you to modify code with confidence
+- Document how the code should work
+- Save time in the long run
 
 ---
 
 ## Installation
 
-### Installer Vitest
+### Install Vitest
 
 ```bash
 npm install -D vitest @vitest/coverage-v8
 ```
 
-### Configurer Vitest
+### Configure Vitest
 
-Créer `vitest.config.ts` :
+Create `vitest.config.ts`:
 
 ```typescript
 import { defineConfig } from 'vitest/config';
@@ -41,7 +41,7 @@ export default defineConfig({
 });
 ```
 
-### Ajouter les Scripts au package.json
+### Add Scripts to package.json
 
 ```json
 {
@@ -55,21 +55,21 @@ export default defineConfig({
 
 ---
 
-## Écrire des Tests
+## Writing Tests
 
-### Localisation des Fichiers de Test
+### Test File Location
 
-Placer les tests à côté du code qu'ils testent :
+Place tests next to the code they test:
 
 ```
 src/
 ├── domain/
 │   └── entities/
 │       ├── user.ts
-│       └── user.test.ts    # Tests pour user.ts
+│       └── user.test.ts    # Tests for user.ts
 ```
 
-### Structure de Base
+### Basic Structure
 
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -77,19 +77,19 @@ import { User } from './user';
 import { Email } from '../value-objects/email';
 
 describe('User', () => {
-  // Grouper les tests liés
+  // Group related tests
   describe('constructor', () => {
     it('should create a user with valid data', () => {
-      // Arrange - préparer les données de test
+      // Arrange - prepare test data
       const id = '123';
       const name = 'John';
       const emailResult = Email.create('john@example.com');
-      if (!emailResult.success) throw new Error('Email invalide');
+      if (!emailResult.success) throw new Error('Invalid email');
 
-      // Act - effectuer l'action
+      // Act - perform the action
       const user = new User(id, name, emailResult.data, new Date());
 
-      // Assert - vérifier le résultat
+      // Assert - verify the result
       expect(user.id).toBe(id);
       expect(user.name).toBe(name);
       expect(user.email.value).toBe('john@example.com');
@@ -101,9 +101,9 @@ describe('User', () => {
     let email: Email;
 
     beforeEach(() => {
-      // Nouveau user pour chaque test
+      // New user for each test
       const emailResult = Email.create('john@example.com');
-      if (!emailResult.success) throw new Error('Email invalide');
+      if (!emailResult.success) throw new Error('Invalid email');
       email = emailResult.data;
       user = new User('123', 'John', email, new Date());
     });
@@ -118,7 +118,7 @@ describe('User', () => {
       const result = user.changeName('J');
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error).toContain('2 caractères');
+        expect(result.error).toContain('2 characters');
       }
     });
   });
@@ -127,9 +127,9 @@ describe('User', () => {
 
 ---
 
-## Patterns de Tests
+## Test Patterns
 
-### Tester les Value Objects
+### Testing Value Objects
 
 ```typescript
 import { describe, it, expect } from 'vitest';
@@ -170,7 +170,7 @@ describe('Email', () => {
       const email2Result = Email.create('test@example.com');
 
       if (!email1Result.success || !email2Result.success) {
-        throw new Error('Emails invalides');
+        throw new Error('Invalid emails');
       }
 
       expect(email1Result.data.equals(email2Result.data)).toBe(true);
@@ -181,7 +181,7 @@ describe('Email', () => {
       const email2Result = Email.create('other@example.com');
 
       if (!email1Result.success || !email2Result.success) {
-        throw new Error('Emails invalides');
+        throw new Error('Invalid emails');
       }
 
       expect(email1Result.data.equals(email2Result.data)).toBe(false);
@@ -190,7 +190,7 @@ describe('Email', () => {
 });
 ```
 
-### Tester les Use Cases
+### Testing Use Cases
 
 ```typescript
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -204,7 +204,7 @@ describe('CreateUserUseCase', () => {
   let useCase: CreateUserUseCase;
 
   beforeEach(() => {
-    // Créer un mock du repository
+    // Create a mock of the repository
     mockUserRepository = {
       findById: vi.fn(),
       findByEmail: vi.fn(),
@@ -269,23 +269,23 @@ describe('CreateUserUseCase', () => {
 
 ---
 
-## Tests de Sécurité (Abuse Cases)
+## Security Tests (Abuse Cases)
 
-Ne pas tester uniquement ce que l'utilisateur DOIT faire, mais ce qu'il NE DOIT PAS pouvoir faire.
+Don't only test what the user SHOULD do, but also what they SHOULD NOT be able to do.
 
-### 1. Tests d'Autorisation
+### 1. Authorization Tests
 
-Vérifier qu'un utilisateur ne peut pas accéder aux données d'un autre.
+Verify that a user cannot access another user's data.
 
 ```typescript
 it('should fail when accessing other user data', async () => {
   // Arrange
   const user1Id = 'user-1';
   const targetId = 'user-2';
-  
+
   // Act
   const result = await useCase.execute({ currentUserId: user1Id, targetId });
-  
+
   // Assert
   expect(result.success).toBe(false);
   if (!result.success) {
@@ -294,9 +294,9 @@ it('should fail when accessing other user data', async () => {
 });
 ```
 
-### 2. Tests d'Injection et Données Malveillantes
+### 2. Injection and Malicious Data Tests
 
-Vérifier la résistance aux entrées dangereuses.
+Verify resistance to dangerous inputs.
 
 ```typescript
 it('should reject malicious HTML input (XSS)', () => {
@@ -313,39 +313,39 @@ it('should reject negative quantities', () => {
 
 ---
 
-## Assertions Courantes
+## Common Assertions
 
 ```typescript
-// Égalité
-expect(value).toBe(expected); // Égalité stricte (===)
-expect(value).toEqual(expected); // Égalité profonde pour objets
-expect(value).not.toBe(unexpected); // Négation
+// Equality
+expect(value).toBe(expected); // Strict equality (===)
+expect(value).toEqual(expected); // Deep equality for objects
+expect(value).not.toBe(unexpected); // Negation
 
-// Véracité
+// Truthiness
 expect(value).toBeTruthy();
 expect(value).toBeFalsy();
 expect(value).toBeNull();
 expect(value).toBeUndefined();
 expect(value).toBeDefined();
 
-// Nombres
+// Numbers
 expect(value).toBeGreaterThan(number);
 expect(value).toBeLessThan(number);
 expect(value).toBeCloseTo(number, decimals);
 
-// Chaînes
+// Strings
 expect(value).toContain('substring');
 expect(value).toMatch(/regex/);
 
-// Tableaux
+// Arrays
 expect(array).toContain(item);
 expect(array).toHaveLength(number);
 
-// Objets
+// Objects
 expect(obj).toHaveProperty('key');
 expect(obj).toMatchObject(partialObject);
 
-// Erreurs (avec fonctions qui throw)
+// Errors (with functions that throw)
 expect(() => fn()).toThrow();
 expect(() => fn()).toThrow('message');
 expect(() => fn()).toThrow(ErrorClass);
@@ -359,35 +359,35 @@ await expect(promise).rejects.toThrow('error');
 
 ## Mocking
 
-### Mock de Fonctions
+### Function Mocks
 
 ```typescript
 import { vi } from 'vitest';
 
-// Créer un mock
+// Create a mock
 const mockFn = vi.fn();
 
-// Configurer la valeur de retour
+// Configure the return value
 mockFn.mockReturnValue('value');
-mockFn.mockResolvedValue('async value'); // Pour les promesses
+mockFn.mockResolvedValue('async value'); // For promises
 
-// Vérifier les appels
+// Verify calls
 expect(mockFn).toHaveBeenCalled();
 expect(mockFn).toHaveBeenCalledWith('arg1', 'arg2');
 expect(mockFn).toHaveBeenCalledTimes(2);
 ```
 
-### Mock de Modules
+### Module Mocks
 
 ```typescript
 import { vi } from 'vitest';
 
-// Mock d'un module entier
+// Mock an entire module
 vi.mock('../services/email.service', () => ({
   sendEmail: vi.fn().mockResolvedValue(true),
 }));
 
-// Import après le mock
+// Import after the mock
 import { sendEmail } from '../services/email.service';
 
 it('should send email', async () => {
@@ -398,30 +398,30 @@ it('should send email', async () => {
 
 ---
 
-## Checklist de Test
+## Test Checklist
 
-Pour chaque fonctionnalité, tester :
+For each feature, test:
 
-- [ ] Chemin nominal (opération normale)
-- [ ] Cas limites (chaînes vides, zéro, null)
-- [ ] Cas d'erreur (entrée invalide, données manquantes)
-- [ ] Conditions aux limites (valeurs max/min)
-- [ ] Tests d'autorisation (qui a le droit de faire quoi)
-- [ ] Tests d'injection de données malveillantes
+- [ ] Happy path (normal operation)
+- [ ] Edge cases (empty strings, zero, null)
+- [ ] Error cases (invalid input, missing data)
+- [ ] Boundary conditions (max/min values)
+- [ ] Authorization tests (who is allowed to do what)
+- [ ] Malicious data injection tests
 
-### Exemples de Cas à Tester
+### Examples of Cases to Test
 
 ```typescript
 describe('User.changeName', () => {
-  // Chemin nominal
+  // Happy path
   it('should update name with valid input', () => {});
 
-  // Cas limites
+  // Edge cases
   it('should trim whitespace from name', () => {});
   it('should accept name at minimum length (2)', () => {});
   it('should accept name at maximum length (100)', () => {});
 
-  // Cas d'erreur
+  // Error cases
   it('should return error for empty name', () => {});
   it('should return error for name too short', () => {});
   it('should return error for name too long', () => {});
@@ -431,33 +431,33 @@ describe('User.changeName', () => {
 
 ---
 
-## Exécuter les Tests
+## Running Tests
 
 ```bash
-# Exécuter tous les tests une fois
+# Run all tests once
 npm run test
 
-# Exécuter en mode watch (re-lance sur modifications)
+# Run in watch mode (re-runs on changes)
 npm run test:watch
 
-# Exécuter avec rapport de couverture
+# Run with coverage report
 npm run test:coverage
 
-# Exécuter un fichier spécifique
+# Run a specific file
 npx vitest run src/domain/entities/user.test.ts
 
-# Exécuter les tests correspondant à un pattern
+# Run tests matching a pattern
 npx vitest run -t "should create"
 ```
 
 ---
 
-## Bonnes Pratiques
+## Best Practices
 
-### 1. Un Test = Une Assertion Logique
+### 1. One Test = One Logical Assertion
 
 ```typescript
-// ❌ MAUVAIS - teste plusieurs choses
+// BAD - tests multiple things
 it('should create and validate user', () => {
   const user = createUser(input);
   expect(user.name).toBe('John');
@@ -467,7 +467,7 @@ it('should create and validate user', () => {
   expect(validation.valid).toBe(true);
 });
 
-// ✅ BON - tests séparés
+// GOOD - separate tests
 it('should create user with correct name', () => {
   const user = createUser(input);
   expect(user.name).toBe('John');
@@ -479,14 +479,14 @@ it('should create user with correct email', () => {
 });
 ```
 
-### 2. Noms de Tests Descriptifs
+### 2. Descriptive Test Names
 
 ```typescript
-// ❌ MAUVAIS
+// BAD
 it('test1', () => {});
 it('works', () => {});
 
-// ✅ BON
+// GOOD
 it('should return error when email format is invalid', () => {});
 it('should update name when new name has valid length', () => {});
 ```
@@ -495,23 +495,23 @@ it('should update name when new name has valid length', () => {});
 
 ```typescript
 it('should calculate total with discount', () => {
-  // Arrange - Préparer
+  // Arrange - Prepare
   const cart = new Cart();
   cart.addItem({ price: 100, quantity: 2 });
   const discount = 0.1; // 10%
 
-  // Act - Agir
+  // Act - Execute
   const total = cart.calculateTotal(discount);
 
-  // Assert - Vérifier
+  // Assert - Verify
   expect(total).toBe(180);
 });
 ```
 
-### 4. Tests Indépendants
+### 4. Independent Tests
 
 ```typescript
-// ❌ MAUVAIS - tests dépendants
+// BAD - dependent tests
 let user: User;
 
 it('should create user', () => {
@@ -520,11 +520,11 @@ it('should create user', () => {
 });
 
 it('should update user name', () => {
-  user.changeName('Jane'); // Dépend du test précédent
+  user.changeName('Jane'); // Depends on the previous test
   expect(user.name).toBe('Jane');
 });
 
-// ✅ BON - tests indépendants avec beforeEach
+// GOOD - independent tests with beforeEach
 let user: User;
 
 beforeEach(() => {

@@ -5,66 +5,66 @@ description: Use this skill when generating code, creating features, writing Typ
 
 # Dayuse Vibe Coding Standards
 
-Ce skill garantit que le code généré pour des non-développeurs respecte des standards professionnels tout en restant compréhensible.
+This skill ensures that code generated for non-developers meets professional standards while remaining understandable.
 
-## Principes Fondamentaux
+## Core Principles
 
-Lors de la génération de code, respecter OBLIGATOIREMENT :
+When generating code, you MUST follow these rules:
 
-1. **TypeScript uniquement** - Tout le code doit être en TypeScript strict
-2. **Pas de type `any`** - Le type `any` est strictement interdit
-3. **Architecture DDD** - Organiser le code selon Domain-Driven Design
-4. **Tests systématiques** - Chaque fonctionnalité nécessite des tests
-5. **Linting obligatoire** - Le code doit passer ESLint et Prettier
-6. **Validation Zod** - Valider les entrées externes avec Zod
-7. **Pattern Result** - Utiliser Result<T, E> au lieu de throw/catch
-8. **Sécurité par défaut** - Audit de sécurité, validation des autorisations et aucun secret en clair
+1. **TypeScript only** - All code must use strict TypeScript
+2. **No `any` type** - The `any` type is strictly forbidden
+3. **DDD Architecture** - Organize code according to Domain-Driven Design
+4. **Systematic testing** - Every feature requires tests
+5. **Mandatory linting** - Code must pass ESLint and Prettier
+6. **Zod validation** - Validate external inputs with Zod
+7. **Result Pattern** - Use Result<T, E> instead of throw/catch
+8. **Security by default** - Security audit, authorization checks, and no hardcoded secrets
 
 ---
 
-## Architecture DDD
+## DDD Architecture
 
-Organiser le code en 4 couches distinctes :
+Organize code into 4 distinct layers:
 
 ```
 src/
-├── domain/           # Logique métier (LE QUOI)
-│   ├── entities/     # Objets métier avec identité
-│   ├── value-objects/# Objets immuables sans identité
-│   ├── repositories/ # Interfaces d'accès aux données
-│   └── services/     # Opérations métier complexes
+├── domain/           # Business logic (THE WHAT)
+│   ├── entities/     # Business objects with identity
+│   ├── value-objects/# Immutable objects without identity
+│   ├── repositories/ # Data access interfaces
+│   └── services/     # Complex business operations
 │
-├── application/      # Cas d'usage (LE COMMENT)
-│   ├── use-cases/    # Opérations métier unitaires
-│   └── dtos/         # Objets de transfert de données
+├── application/      # Use Cases (THE HOW)
+│   ├── use-cases/    # Unit business operations
+│   └── dtos/         # Data Transfer Objects
 │
-├── infrastructure/   # Détails techniques (LE OÙ)
-│   ├── repositories/ # Implémentations BDD/API
-│   ├── services/     # Services externes
-│   └── persistence/  # Configuration BDD
+├── infrastructure/   # Technical details (THE WHERE)
+│   ├── repositories/ # DB/API implementations
+│   ├── services/     # External services
+│   └── persistence/  # DB configuration
 │
-└── interfaces/       # Points d'entrée (LE QUI)
-    ├── http/         # Contrôleurs REST
-    ├── cli/          # Commandes CLI
-    └── events/       # Gestionnaires d'événements
+└── interfaces/       # Entry points (THE WHO)
+    ├── http/         # REST controllers
+    ├── cli/          # CLI commands
+    └── events/       # Event handlers
 ```
 
-### Règles des Couches
+### Layer Rules
 
-| Couche | Dépend de | Contient |
-|--------|-----------|----------|
-| Domain | Rien | Entités, Value Objects, Interfaces Repository |
+| Layer | Depends on | Contains |
+|-------|------------|----------|
+| Domain | Nothing | Entities, Value Objects, Repository Interfaces |
 | Application | Domain | Use Cases, DTOs |
-| Infrastructure | Domain | Implémentations Repository, Services externes |
-| Interfaces | Application | Contrôleurs, CLI, Event Handlers |
+| Infrastructure | Domain | Repository Implementations, External services |
+| Interfaces | Application | Controllers, CLI, Event Handlers |
 
 ---
 
-## TypeScript Strict
+## Strict TypeScript
 
-### Configuration Requise
+### Required Configuration
 
-Tous les projets doivent avoir dans `tsconfig.json` :
+All projects must have the following in `tsconfig.json`:
 
 ```json
 {
@@ -78,18 +78,18 @@ Tous les projets doivent avoir dans `tsconfig.json` :
 }
 ```
 
-### Alternatives au type `any`
+### Alternatives to the `any` Type
 
-| Au lieu de `any` | Utiliser | Quand |
-|------------------|----------|-------|
-| `any` | `unknown` | Type vraiment inconnu (nécessite type guard) |
-| `any[]` | `T[]` | Tableaux typés |
-| `any` | Interface spécifique | Structure connue |
-| `any` | Union types | Plusieurs types possibles |
-| `any` | Generic `<T>` | Composants réutilisables |
-| `any` | `Record<string, unknown>` | Dictionnaires d'objets |
+| Instead of `any` | Use | When |
+|-------------------|-----|------|
+| `any` | `unknown` | Truly unknown type (requires Type Guard) |
+| `any[]` | `T[]` | Typed arrays |
+| `any` | Specific interface | Known structure |
+| `any` | Union types | Multiple possible types |
+| `any` | Generic `<T>` | Reusable components |
+| `any` | `Record<string, unknown>` | Object dictionaries |
 
-### Pattern de Type Guard
+### Type Guard Pattern
 
 ```typescript
 function isUser(value: unknown): value is User {
@@ -104,24 +104,24 @@ function isUser(value: unknown): value is User {
 
 ---
 
-## Validation avec Zod
+## Validation with Zod
 
-Utiliser Zod pour valider TOUTES les entrées externes :
+Use Zod to validate ALL external inputs:
 
 ```typescript
 import { z } from 'zod';
 
-// Définir le schéma
+// Define the schema
 const CreateUserSchema = z.object({
   name: z.string().min(2).max(100),
   email: z.string().email(),
   age: z.number().int().positive().optional(),
 });
 
-// Inférer le type TypeScript
+// Infer the TypeScript type
 type CreateUserInput = z.infer<typeof CreateUserSchema>;
 
-// Valider les données
+// Validate data
 function validateInput(data: unknown): Result<CreateUserInput, ValidationError> {
   const result = CreateUserSchema.safeParse(data);
   if (!result.success) {
@@ -133,9 +133,9 @@ function validateInput(data: unknown): Result<CreateUserInput, ValidationError> 
 
 ---
 
-## Pattern Result
+## Result Pattern
 
-Ne jamais utiliser throw/catch pour les erreurs métier. Utiliser le pattern Result :
+Never use throw/catch for business errors. Use the Result Pattern instead:
 
 ```typescript
 type Result<T, E = Error> =
@@ -146,7 +146,7 @@ type Result<T, E = Error> =
 const ok = <T>(data: T): Result<T, never> => ({ success: true, data });
 const err = <E>(error: E): Result<never, E> => ({ success: false, error });
 
-// Utilisation
+// Usage
 function createUser(input: CreateUserInput): Result<User, UserError> {
   if (await userExists(input.email)) {
     return err(new EmailAlreadyExistsError(input.email));
@@ -155,73 +155,73 @@ function createUser(input: CreateUserInput): Result<User, UserError> {
   return ok(user);
 }
 
-// Consommation
+// Consumption
 const result = createUser(input);
 if (!result.success) {
-  // Gérer l'erreur
+  // Handle the error
   return handleError(result.error);
 }
-// Utiliser result.data
+// Use result.data
 ```
 
 
 ---
 
-## Sécurité et Autorisations (Zero Trust)
+## Security and Authorization (Zero Trust)
 
-L'IA doit adopter une approche **Zero Trust** : ne jamais faire confiance aux entrées ni à l'état implicite.
+The AI must adopt a **Zero Trust** approach: never trust inputs or implicit state.
 
-### 1. Vérification Systématique des Autorisations
+### 1. Systematic Authorization Checks
 
-Toute action métier doit vérifier **QUI** fait l'action et s'il en a le **DROIT**.
+Every business action must verify **WHO** is performing it and whether they have the **RIGHT** to do so.
 
 ```typescript
-// ❌ MAUVAIS : On suppose que l'utilisateur a le droit car il est authentifié
+// ❌ BAD: Assumes the user has permission because they are authenticated
 function deleteProject(projectId: string, user: User) {
   return projectRepo.delete(projectId);
 }
 
-// ✅ BON : Vérification explicite de la permission (Business Logic)
+// ✅ GOOD: Explicit permission check (Business Logic)
 function deleteProject(projectId: string, user: User): Result<void, AppError> {
   const project = await projectRepo.findById(projectId);
-  
-  // Vérification d'appartenance ou de rôle
+
+  // Ownership or role check
   if (project.ownerId !== user.id && user.role !== 'ADMIN') {
-    return err(new UnauthorizedError("Vous n'avez pas les droits de suppression sur ce projet"));
+    return err(new UnauthorizedError("You do not have permission to delete this project"));
   }
-  
+
   return projectRepo.delete(projectId);
 }
 ```
 
-### 2. Pas de Secrets en Clair
+### 2. No Hardcoded Secrets
 
-Ne JAMAIS écrire de clés API, tokens, mots de passe ou certificats dans le code.
+NEVER write API keys, tokens, passwords, or certificates directly in code.
 
 ```typescript
-// ❌ INTERDIT
+// ❌ FORBIDDEN
 const API_KEY = "sk-1234567890abcdef";
 
-// ✅ REQUIS
+// ✅ REQUIRED
 const API_KEY = process.env.OPENAI_API_KEY;
 ```
 
-### 3. Sanitisation des Entrées
+### 3. Input Sanitization
 
-Ne jamais insérer de données utilisateur brutes dans :
-- Du HTML (Risque XSS)
-- Des requêtes SQL (Risque Injection SQL)
-- Des commandes système (Risque Command Injection)
+Never insert raw user data into:
+- HTML (XSS risk)
+- SQL queries (SQL Injection risk)
+- System commands (Command Injection risk)
 
-Utiliser Zod pour valider le format et des bibliothèques d'échappement pour l'affichage.
+Use Zod to validate the format and escaping libraries for display.
 
 ---
 
-## Tests avec Vitest
+## Testing with Vitest
 
-### Localisation des Tests
+### Test Location
 
-Placer les tests à côté des fichiers source :
+Place tests alongside source files:
 
 ```
 src/domain/entities/
@@ -229,7 +229,7 @@ src/domain/entities/
 └── user.test.ts
 ```
 
-### Structure des Tests
+### Test Structure
 
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -256,115 +256,115 @@ describe('User', () => {
 });
 ```
 
-### Tests Requis Pour
+### Tests Required For
 
-- Toutes les entités et value objects du domaine
-- Tous les use cases de l'application
-- Toutes les fonctions publiques
-- Les cas limites et la gestion d'erreurs
+- All domain Entities and Value Objects
+- All application Use Cases
+- All public functions
+- Edge cases and error handling
 
 ---
 
 ## Linting
 
-### Commandes à Exécuter
+### Commands to Run
 
-Avant de terminer TOUTE tâche de code :
-
-```bash
-npm run lint        # Vérifier les problèmes
-npm run lint:fix    # Corriger automatiquement
-npm run format      # Formater avec Prettier
-npm run test        # Lancer les tests
-```
-
-### Script de Vérification Complète
+Before completing ANY code task:
 
 ```bash
-npm run lint:fix && npm run format && npm run test
+npm run lint        # Check for issues
+npm run lint:fix    # Auto-fix issues
+npm run format      # Format with Prettier
+npm run test        # Run tests
 ```
 
----
+### Full Verification Script
 
-## Workflow de Génération de Code
-
-Pour chaque nouvelle fonctionnalité :
-
-### 1. Déterminer la Couche
-- Logique métier pure ? → `domain/`
-- Orchestration d'opérations ? → `application/`
-- Intégration externe ? → `infrastructure/`
-- Point d'entrée ? → `interfaces/`
-
-### 2. Créer avec les Bons Types
-- Définir les interfaces en premier
-- Utiliser des types explicites partout
-- Jamais utiliser `any`
-- Valider les entrées avec Zod
-
-### 3. Gérer les Erreurs avec Result
-- Définir les types d'erreur spécifiques
-- Retourner Result au lieu de throw
-- Documenter les cas d'erreur
-
-### 4. Écrire les Tests
-- Créer le fichier test à côté du source
-- Tester le chemin nominal
-- Tester les cas d'erreur
-
-### 5. Vérifier la Qualité
 ```bash
 npm run lint:fix && npm run format && npm run test
 ```
 
 ---
 
-## Conventions de Nommage
+## Code Generation Workflow
 
-| Type | Convention | Exemple |
+For each new feature:
+
+### 1. Determine the Layer
+- Pure business logic? -> `domain/`
+- Operation orchestration? -> `application/`
+- External integration? -> `infrastructure/`
+- Entry point? -> `interfaces/`
+
+### 2. Create with Proper Types
+- Define interfaces first
+- Use explicit types everywhere
+- Never use `any`
+- Validate inputs with Zod
+
+### 3. Handle Errors with Result
+- Define specific error types
+- Return Result instead of throw
+- Document error cases
+
+### 4. Write Tests
+- Create the test file alongside the source
+- Test the happy path
+- Test error cases
+
+### 5. Verify Quality
+```bash
+npm run lint:fix && npm run format && npm run test
+```
+
+---
+
+## Naming Conventions
+
+| Type | Convention | Example |
 |------|------------|---------|
-| Fichiers | kebab-case | `user-repository.ts` |
+| Files | kebab-case | `user-repository.ts` |
 | Classes | PascalCase | `UserRepository` |
 | Interfaces | PascalCase | `UserRepository` |
-| Fonctions | camelCase | `createUser` |
-| Constantes | SCREAMING_SNAKE | `MAX_RETRY_COUNT` |
+| Functions | camelCase | `createUser` |
+| Constants | SCREAMING_SNAKE | `MAX_RETRY_COUNT` |
 | Types | PascalCase | `CreateUserDTO` |
-| Schémas Zod | PascalCase + Schema | `CreateUserSchema` |
+| Zod Schemas | PascalCase + Schema | `CreateUserSchema` |
 
 ---
 
-## Ressources Additionnelles
+## Additional Resources
 
-Pour des guides détaillés, consulter :
+For detailed guides, refer to:
 
-- **[references/ddd-architecture.md](references/ddd-architecture.md)** - Patterns DDD complets
-- **[references/typescript-patterns.md](references/typescript-patterns.md)** - Alternatives au type any
-- **[references/testing-guide.md](references/testing-guide.md)** - Guide complet Vitest
-- **[references/linting-setup.md](references/linting-setup.md)** - Configuration ESLint/Prettier
-- **[references/zod-validation.md](references/zod-validation.md)** - Validation avec Zod
-- **[references/result-pattern.md](references/result-pattern.md)** - Pattern Result détaillé
+- **[references/ddd-architecture.md](references/ddd-architecture.md)** - Complete DDD Patterns
+- **[references/typescript-patterns.md](references/typescript-patterns.md)** - Alternatives to the any type
+- **[references/testing-guide.md](references/testing-guide.md)** - Complete Vitest Guide
+- **[references/linting-setup.md](references/linting-setup.md)** - ESLint/Prettier Configuration
+- **[references/zod-validation.md](references/zod-validation.md)** - Validation with Zod
+- **[references/result-pattern.md](references/result-pattern.md)** - Detailed Result Pattern
 
 ---
 
 ## Quick Reference
 
 ```
-TOUJOURS :
-✓ TypeScript strict
-✓ Types explicites partout
-✓ Tests pour tout le code
-✓ Linter avant de terminer
-✓ Structure DDD
-✓ Zod pour les entrées externes
-✓ Result pour les erreurs métier
-✓ Vérification des permissions
+ALWAYS:
+✓ Strict TypeScript
+✓ Explicit types everywhere
+✓ Tests for all code
+✓ Linter before finishing
+✓ DDD structure
+✓ Zod for external inputs
+✓ Result for business errors
+✓ Permission checks
 
-JAMAIS :
-✗ Type any
-✗ Sauter les tests
-✗ Ignorer les erreurs linter
-✗ Logique infra dans le domaine
-✗ throw/catch pour erreurs métier
-✗ Données non validées
-✗ Secrets/Clés API en dur
+NEVER:
+✗ any type
+✗ Skip tests
+✗ Ignore linter errors
+✗ Infrastructure logic in domain
+✗ throw/catch for business errors
+✗ Unvalidated data
+✗ Hardcoded secrets/API keys
 ```

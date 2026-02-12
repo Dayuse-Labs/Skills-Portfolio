@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-// Fiber de base - exécution coopérative
+// Basic Fiber - cooperative execution
 $fiber = new Fiber(function (): string {
     $value = Fiber::suspend('started');
     return "Result: {$value}";
@@ -18,7 +18,7 @@ $result = $fiber->resume('data'); // null (suspended or terminated)
 $return = $fiber->getReturn();    // 'Result: data'
 ```
 
-## Pattern Async/Await avec Fibers
+## Async/Await Pattern with Fibers
 
 ```php
 <?php
@@ -45,12 +45,12 @@ final class AsyncRunner
     {
         $results = [];
 
-        // Démarrer toutes les fibers
+        // Start all fibers
         foreach ($this->fibers as $i => $fiber) {
             $fiber->start();
         }
 
-        // Boucler jusqu'à ce que toutes soient terminées
+        // Loop until all are terminated
         $pending = true;
         while ($pending) {
             $pending = false;
@@ -69,7 +69,7 @@ final class AsyncRunner
     }
 }
 
-// Utilisation
+// Usage
 $runner = new AsyncRunner();
 $runner
     ->add(fn() => fetchFromApi('/users'))
@@ -79,7 +79,7 @@ $runner
 $results = $runner->runAll();
 ```
 
-## Amphp (Framework Async)
+## Amphp (Async Framework)
 
 ```php
 <?php
@@ -91,7 +91,7 @@ use Amp\Http\Client\Request;
 use function Amp\async;
 use function Amp\Future\await;
 
-// Requêtes HTTP concurrentes
+// Concurrent HTTP requests
 function fetchMultipleEndpoints(array $urls): array
 {
     $client = HttpClientBuilder::buildDefault();
@@ -107,7 +107,7 @@ function fetchMultipleEndpoints(array $urls): array
     return await($futures);
 }
 
-// Utilisation dans un service Symfony
+// Usage in a Symfony service
 final readonly class ConcurrentApiService
 {
     public function __construct(
@@ -136,9 +136,9 @@ final readonly class ConcurrentApiService
 }
 ```
 
-## Symfony Messenger (Async par Messages)
+## Symfony Messenger (Message-based Async)
 
-Le pattern async le plus courant dans Symfony :
+The most common async pattern in Symfony:
 
 ```php
 <?php
@@ -147,7 +147,7 @@ declare(strict_types=1);
 
 namespace App\Message;
 
-// Message immutable
+// Immutable message
 final readonly class ProcessBooking
 {
     public function __construct(
@@ -200,11 +200,11 @@ framework:
 
 ## Quick Reference
 
-| Pattern | Quand l'utiliser | Complexité |
-|---------|------------------|------------|
-| Fibers | I/O concurrentes dans un même process | Moyenne |
-| Amphp | Serveur HTTP async, requêtes parallèles | Haute |
-| Messenger | Jobs asynchrones, queues, événements différés | Faible (recommandé) |
-| Streams | Lecture/écriture de fichiers non-bloquante | Moyenne |
+| Pattern | When to use | Complexity |
+|---------|-------------|------------|
+| Fibers | Concurrent I/O within a single process | Medium |
+| Amphp | Async HTTP server, parallel requests | High |
+| Messenger | Asynchronous jobs, queues, deferred events | Low (recommended) |
+| Streams | Non-blocking file read/write | Medium |
 
-**Recommandation Dayuse** : Préférer Symfony Messenger pour l'async applicatif (bookings, notifications, emails). Réserver Fibers/Amphp pour les cas de concurrence I/O intensive.
+**Dayuse recommendation**: Prefer Symfony Messenger for application-level async (bookings, notifications, emails). Reserve Fibers/Amphp for intensive I/O concurrency use cases.

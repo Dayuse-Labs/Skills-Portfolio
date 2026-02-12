@@ -1,14 +1,14 @@
-# Configuration Linting et Formatage
+# Linting and Formatting Configuration
 
-Ce guide explique comment configurer et utiliser ESLint et Prettier.
+This guide explains how to configure and use ESLint and Prettier.
 
-## Pourquoi Linter ?
+## Why Lint?
 
-Le linting :
-- Attrape les bugs avant l'exécution
-- Impose un style de code cohérent
-- Empêche le type `any`
-- Facilite les revues de code
+Linting:
+- Catches bugs before execution
+- Enforces a consistent code style
+- Prevents the `any` type
+- Makes code reviews easier
 
 ---
 
@@ -20,9 +20,9 @@ npm install -D eslint @eslint/js typescript-eslint prettier eslint-config-pretti
 
 ---
 
-## Configuration ESLint
+## ESLint Configuration
 
-Créer `eslint.config.mjs` :
+Create `eslint.config.mjs`:
 
 ```javascript
 import eslint from '@eslint/js';
@@ -50,13 +50,13 @@ export default tseslint.config(
       'no-secrets': noSecretsPlugin,
     },
     rules: {
-      // === SÉCURITÉ ===
+      // === SECURITY ===
       'security/detect-object-injection': 'warn',
       'security/detect-non-literal-regexp': 'error',
       'security/detect-unsafe-regex': 'error',
       'no-secrets/no-secrets': 'error',
 
-      // === CRITIQUE : PAS DE ANY ===
+      // === CRITICAL: NO ANY ===
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unsafe-assignment': 'error',
       '@typescript-eslint/no-unsafe-call': 'error',
@@ -64,7 +64,7 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-return': 'error',
       '@typescript-eslint/no-unsafe-argument': 'error',
 
-      // === TYPES EXPLICITES REQUIS ===
+      // === EXPLICIT TYPES REQUIRED ===
       '@typescript-eslint/explicit-function-return-type': [
         'error',
         {
@@ -74,7 +74,7 @@ export default tseslint.config(
       ],
       '@typescript-eslint/explicit-module-boundary-types': 'error',
 
-      // === QUALITÉ DU CODE ===
+      // === CODE QUALITY ===
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -88,7 +88,7 @@ export default tseslint.config(
       '@typescript-eslint/prefer-nullish-coalescing': 'error',
       '@typescript-eslint/prefer-optional-chain': 'error',
 
-      // === ORGANISATION DES IMPORTS ===
+      // === IMPORT ORGANIZATION ===
       'import/order': [
         'error',
         {
@@ -118,9 +118,9 @@ export default tseslint.config(
 
 ---
 
-## Configuration Prettier
+## Prettier Configuration
 
-Créer `prettier.config.mjs` :
+Create `prettier.config.mjs`:
 
 ```javascript
 /** @type {import('prettier').Config} */
@@ -143,7 +143,7 @@ export default {
 
 ---
 
-## Scripts package.json
+## package.json Scripts
 
 ```json
 {
@@ -159,30 +159,30 @@ export default {
 
 ---
 
-## Commandes d'Utilisation
+## Usage Commands
 
 ```bash
-# Vérifier les problèmes de lint
+# Check for lint issues
 npm run lint
 
-# Corriger automatiquement les problèmes
+# Automatically fix issues
 npm run lint:fix
 
-# Formater tous les fichiers
+# Format all files
 npm run format
 
-# Vérifier si les fichiers sont formatés
+# Check if files are formatted
 npm run format:check
 
-# Exécuter toutes les vérifications
+# Run all checks
 npm run check
 ```
 
 ---
 
-## Intégration VS Code
+## VS Code Integration
 
-Créer `.vscode/settings.json` :
+Create `.vscode/settings.json`:
 
 ```json
 {
@@ -195,7 +195,7 @@ Créer `.vscode/settings.json` :
 }
 ```
 
-Extensions recommandées (`.vscode/extensions.json`) :
+Recommended extensions (`.vscode/extensions.json`):
 
 ```json
 {
@@ -208,22 +208,22 @@ Extensions recommandées (`.vscode/extensions.json`) :
 
 ---
 
-## Pre-commit Hooks (Optionnel)
+## Pre-commit Hooks (Optional)
 
-Installer Husky et lint-staged :
+Install Husky and lint-staged:
 
 ```bash
 npm install -D husky lint-staged
 npx husky init
 ```
 
-Créer `.husky/pre-commit` :
+Create `.husky/pre-commit`:
 
 ```bash
 npx lint-staged
 ```
 
-Ajouter au `package.json` :
+Add to `package.json`:
 
 ```json
 {
@@ -235,88 +235,88 @@ Ajouter au `package.json` :
 
 ---
 
-## Erreurs Courantes et Solutions
+## Common Errors and Solutions
 
-### Erreur : `@typescript-eslint/no-explicit-any`
+### Error: `@typescript-eslint/no-explicit-any`
 
 ```typescript
-// ❌ MAUVAIS
+// BAD
 function process(data: any): any {
   return data;
 }
 
-// ✅ SOLUTION : Utiliser des types spécifiques ou unknown
+// SOLUTION: Use specific types or unknown
 function process(data: unknown): ProcessedData {
-  // Valider et traiter
+  // Validate and process
 }
 ```
 
-### Erreur : `@typescript-eslint/explicit-function-return-type`
+### Error: `@typescript-eslint/explicit-function-return-type`
 
 ```typescript
-// ❌ MAUVAIS
+// BAD
 function add(a: number, b: number) {
   return a + b;
 }
 
-// ✅ SOLUTION : Ajouter le type de retour
+// SOLUTION: Add the return type
 function add(a: number, b: number): number {
   return a + b;
 }
 ```
 
-### Erreur : `@typescript-eslint/no-floating-promises`
+### Error: `@typescript-eslint/no-floating-promises`
 
 ```typescript
-// ❌ MAUVAIS
+// BAD
 async function fetchData(): Promise<void> {
-  fetch('/api/data'); // Promise non awaited
+  fetch('/api/data'); // Promise not awaited
 }
 
-// ✅ SOLUTION : Await ou gérer la promesse
+// SOLUTION: Await or handle the promise
 async function fetchData(): Promise<void> {
   await fetch('/api/data');
 }
 
-// OU void explicite si le résultat n'est pas nécessaire
+// OR explicit void if the result is not needed
 function triggerFetch(): void {
   void fetch('/api/data');
 }
 ```
 
-### Erreur : `@typescript-eslint/no-unused-vars`
+### Error: `@typescript-eslint/no-unused-vars`
 
 ```typescript
-// ❌ MAUVAIS
+// BAD
 function process(data: Data, options: Options): void {
   console.log(data);
-  // options n'est pas utilisé
+  // options is not used
 }
 
-// ✅ SOLUTION : Préfixer avec underscore
+// SOLUTION: Prefix with underscore
 function process(data: Data, _options: Options): void {
   console.log(data);
 }
 ```
 
-### Erreur : `@typescript-eslint/no-unsafe-assignment`
+### Error: `@typescript-eslint/no-unsafe-assignment`
 
 ```typescript
-// ❌ MAUVAIS
-const data = JSON.parse(jsonString); // type any implicite
+// BAD
+const data = JSON.parse(jsonString); // implicit any type
 
-// ✅ SOLUTION : Typer et valider
+// SOLUTION: Type and validate
 const data: unknown = JSON.parse(jsonString);
-const validatedData = MySchema.parse(data); // Avec Zod
+const validatedData = MySchema.parse(data); // With Zod
 ```
 
 ---
 
-## Dépannage
+## Troubleshooting
 
-### ESLint ne trouve pas tsconfig
+### ESLint cannot find tsconfig
 
-S'assurer que `tsconfig.json` existe et inclut tous les fichiers source :
+Make sure `tsconfig.json` exists and includes all source files:
 
 ```json
 {
@@ -325,46 +325,46 @@ S'assurer que `tsconfig.json` existe et inclut tous les fichiers source :
 }
 ```
 
-### Conflit Prettier et ESLint
+### Prettier and ESLint Conflict
 
-Le package `eslint-config-prettier` désactive les règles ESLint qui entrent en conflit avec Prettier. S'assurer qu'il est inclus en dernier dans la config.
+The `eslint-config-prettier` package disables ESLint rules that conflict with Prettier. Make sure it is included last in the config.
 
-### Trop d'erreurs à corriger
+### Too Many Errors to Fix
 
-Commencer par corriger les erreurs par petits lots :
+Start by fixing errors in small batches:
 
 ```bash
-# Corriger uniquement des fichiers spécifiques
+# Fix only specific files
 npx eslint src/domain/ --fix
 
-# Voir la progression avec un nombre max de warnings
+# See progress with a max number of warnings
 npx eslint src/ --max-warnings 50
 ```
 
-### Ignorer temporairement une règle
+### Temporarily Ignore a Rule
 
 ```typescript
-// Pour une ligne
+// For a single line
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const legacy: any = oldCode();
 
-// Pour un bloc
+// For a block
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// ... code legacy
+// ... legacy code
 /* eslint-enable @typescript-eslint/no-explicit-any */
 ```
 
-⚠️ **Attention** : N'utiliser que pour du code legacy en cours de migration. Ne jamais désactiver pour du nouveau code.
+**Warning**: Only use this for legacy code being migrated. Never disable rules for new code.
 
 ---
 
-## Règles Critiques Expliquées
+## Critical Rules Explained
 
-| Règle | Pourquoi |
-|-------|----------|
-| `no-explicit-any` | Empêche l'utilisation de `any` |
-| `no-unsafe-*` | Empêche les opérations non sûres avec `any` |
-| `explicit-function-return-type` | Force à documenter les types de retour |
-| `no-floating-promises` | Empêche les promesses non gérées |
-| `no-unused-vars` | Garde le code propre |
-| `import/order` | Organise les imports de manière cohérente |
+| Rule | Why |
+|------|-----|
+| `no-explicit-any` | Prevents the use of `any` |
+| `no-unsafe-*` | Prevents unsafe operations with `any` |
+| `explicit-function-return-type` | Forces documenting return types |
+| `no-floating-promises` | Prevents unhandled promises |
+| `no-unused-vars` | Keeps the code clean |
+| `import/order` | Organizes imports consistently |

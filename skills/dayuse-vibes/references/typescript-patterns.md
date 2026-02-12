@@ -1,47 +1,47 @@
-# Patterns TypeScript pour Vibe Coders
+# TypeScript Patterns for Vibe Coders
 
-Ce guide aide les non-développeurs à écrire du TypeScript correct sans utiliser `any`.
+This guide helps non-developers write correct TypeScript without using `any`.
 
-## La Règle d'Or : Pas de `any`
+## The Golden Rule: No `any`
 
-Le type `any` annule l'intérêt de TypeScript. C'est comme acheter un chien de garde et le laisser enfermé dehors.
+The `any` type defeats the purpose of TypeScript. It's like buying a guard dog and leaving it locked outside.
 
 ---
 
-## Pattern 1 : Unknown vs Any
+## Pattern 1: Unknown vs Any
 
-Quand vous ne connaissez vraiment pas le type, utilisez `unknown` :
+When you truly don't know the type, use `unknown`:
 
 ```typescript
-// ❌ MAUVAIS - any contourne toute vérification
+// ❌ BAD - any bypasses all checks
 function processData(data: any) {
-  return data.name; // Pas d'erreur, mais peut planter à l'exécution
+  return data.name; // No error, but can crash at runtime
 }
 
-// ✅ BON - unknown exige une vérification de type
+// ✅ GOOD - unknown requires a type check
 function processData(data: unknown) {
   if (typeof data === 'object' && data !== null && 'name' in data) {
     return (data as { name: string }).name;
   }
-  throw new Error('Structure de données invalide');
+  throw new Error('Invalid data structure');
 }
 ```
 
 ---
 
-## Pattern 2 : Type Guards
+## Pattern 2: Type Guards
 
-Créer des fonctions qui affinent les types :
+Create functions that narrow types:
 
 ```typescript
-// Définir à quoi ressemble un User
+// Define what a User looks like
 interface User {
   id: string;
   name: string;
   email: string;
 }
 
-// Fonction type guard
+// Type guard function
 function isUser(value: unknown): value is User {
   return (
     typeof value === 'object' &&
@@ -55,33 +55,33 @@ function isUser(value: unknown): value is User {
   );
 }
 
-// Utilisation
+// Usage
 function handleUserData(data: unknown): User {
   if (isUser(data)) {
-    return data; // TypeScript sait maintenant que c'est un User
+    return data; // TypeScript now knows this is a User
   }
-  throw new Error('Données utilisateur invalides');
+  throw new Error('Invalid user data');
 }
 ```
 
 ---
 
-## Pattern 3 : Generics pour la Réutilisabilité
+## Pattern 3: Generics for Reusability
 
-Au lieu de `any` pour les fonctions flexibles :
+Instead of `any` for flexible functions:
 
 ```typescript
-// ❌ MAUVAIS - any perd l'information de type
+// ❌ BAD - any loses type information
 function firstElement(arr: any[]): any {
   return arr[0];
 }
 
-// ✅ BON - generic préserve le type
+// ✅ GOOD - generic preserves the type
 function firstElement<T>(arr: T[]): T | undefined {
   return arr[0];
 }
 
-// Utilisation - TypeScript connaît le type de retour
+// Usage - TypeScript knows the return type
 const numbers = [1, 2, 3];
 const first = firstElement(numbers); // Type: number | undefined
 
@@ -89,20 +89,20 @@ const names = ['Alice', 'Bob'];
 const firstName = firstElement(names); // Type: string | undefined
 ```
 
-### Exemples Courants de Generics
+### Common Generics Examples
 
 ```typescript
-// Fonction de mapping générique
+// Generic mapping function
 function mapArray<T, U>(arr: T[], fn: (item: T) => U): U[] {
   return arr.map(fn);
 }
 
-// Fonction de filtrage générique
+// Generic filtering function
 function filterArray<T>(arr: T[], predicate: (item: T) => boolean): T[] {
   return arr.filter(predicate);
 }
 
-// Classe générique
+// Generic class
 class Container<T> {
   constructor(private value: T) {}
 
@@ -118,17 +118,17 @@ class Container<T> {
 
 ---
 
-## Pattern 4 : Union Types
+## Pattern 4: Union Types
 
-Quand une valeur peut être de plusieurs types spécifiques :
+When a value can be one of several specific types:
 
 ```typescript
-// ❌ MAUVAIS
+// ❌ BAD
 function formatValue(value: any): string {
   return String(value);
 }
 
-// ✅ BON
+// ✅ GOOD
 function formatValue(value: string | number | boolean): string {
   if (typeof value === 'string') {
     return value;
@@ -136,14 +136,14 @@ function formatValue(value: string | number | boolean): string {
   if (typeof value === 'number') {
     return value.toFixed(2);
   }
-  return value ? 'Oui' : 'Non';
+  return value ? 'Yes' : 'No';
 }
 ```
 
-### Union avec Objets (Discriminated Unions)
+### Union with Objects (Discriminated Unions)
 
 ```typescript
-// Définir différents types de résultat
+// Define different result types
 interface SuccessResult {
   status: 'success';
   data: User;
@@ -156,30 +156,30 @@ interface ErrorResult {
 
 type ApiResult = SuccessResult | ErrorResult;
 
-// Utilisation - TypeScript affine selon le status
+// Usage - TypeScript narrows based on status
 function handleResult(result: ApiResult): void {
   if (result.status === 'success') {
-    console.log(result.data.name); // TypeScript sait que data existe
+    console.log(result.data.name); // TypeScript knows data exists
   } else {
-    console.error(result.message); // TypeScript sait que message existe
+    console.error(result.message); // TypeScript knows message exists
   }
 }
 ```
 
 ---
 
-## Pattern 5 : Record Types
+## Pattern 5: Record Types
 
-Pour les dictionnaires d'objets :
+For object dictionaries:
 
 ```typescript
-// ❌ MAUVAIS
+// ❌ BAD
 const config: any = {
   apiUrl: 'https://api.example.com',
   timeout: 5000,
 };
 
-// ✅ BON - quand les clés sont connues
+// ✅ GOOD - when keys are known
 interface Config {
   apiUrl: string;
   timeout: number;
@@ -191,13 +191,13 @@ const config: Config = {
   timeout: 5000,
 };
 
-// ✅ BON - quand les clés sont dynamiques
+// ✅ GOOD - when keys are dynamic
 const userScores: Record<string, number> = {
   alice: 100,
   bob: 85,
 };
 
-// Record avec types plus complexes
+// Record with more complex types
 interface UserProfile {
   name: string;
   score: number;
@@ -211,24 +211,24 @@ const profiles: Record<string, UserProfile> = {
 
 ---
 
-## Pattern 6 : Types de Fonctions
+## Pattern 6: Function Types
 
-Toujours typer les paramètres et retours de fonctions :
+Always type function parameters and return values:
 
 ```typescript
-// ❌ MAUVAIS
+// ❌ BAD
 const calculate = (a, b) => a + b;
 
-// ✅ BON
+// ✅ GOOD
 const calculate = (a: number, b: number): number => a + b;
 
-// Pour les callbacks
+// For callbacks
 interface ButtonProps {
   onClick: (event: MouseEvent) => void;
   label: string;
 }
 
-// Type de fonction réutilisable
+// Reusable function type
 type AsyncHandler<T> = (data: T) => Promise<void>;
 
 const handleUser: AsyncHandler<User> = async (user) => {
@@ -238,10 +238,10 @@ const handleUser: AsyncHandler<User> = async (user) => {
 
 ---
 
-## Pattern 7 : Gestion des Réponses API
+## Pattern 7: Handling API Responses
 
 ```typescript
-// Définir la forme de réponse attendue
+// Define the expected response shape
 interface ApiResponse<T> {
   data: T;
   status: number;
@@ -253,7 +253,7 @@ interface User {
   name: string;
 }
 
-// Type guard pour ApiResponse
+// Type guard for ApiResponse
 function isApiResponse<T>(
   value: unknown,
   isData: (v: unknown) => v is T
@@ -270,13 +270,13 @@ function isApiResponse<T>(
   );
 }
 
-// Wrapper fetch typé
+// Typed fetch wrapper
 async function fetchUser(id: string): Promise<ApiResponse<User>> {
   const response = await fetch(`/api/users/${id}`);
   const json: unknown = await response.json();
 
   if (!isApiResponse<User>(json, isUser)) {
-    throw new Error('Réponse API invalide');
+    throw new Error('Invalid API response');
   }
 
   return json;
@@ -285,9 +285,9 @@ async function fetchUser(id: string): Promise<ApiResponse<User>> {
 
 ---
 
-## Pattern 8 : Utility Types
+## Pattern 8: Utility Types
 
-Types utilitaires pour la flexibilité :
+Utility types for flexibility:
 
 ```typescript
 interface User {
@@ -297,45 +297,45 @@ interface User {
   avatar?: string;
 }
 
-// Pour les mises à jour - tous les champs optionnels
+// For updates - all fields optional
 type UpdateUserDTO = Partial<Omit<User, 'id'>>;
-// Résultat: { name?: string; email?: string; avatar?: string }
+// Result: { name?: string; email?: string; avatar?: string }
 
-// Pour la création - exiger des champs spécifiques
+// For creation - require specific fields
 type CreateUserDTO = Pick<User, 'name' | 'email'>;
-// Résultat: { name: string; email: string }
+// Result: { name: string; email: string }
 
-// Rendre les champs optionnels requis
+// Make optional fields required
 type CompleteUser = Required<User>;
-// Résultat: { id: string; name: string; email: string; avatar: string }
+// Result: { id: string; name: string; email: string; avatar: string }
 
-// Lecture seule
+// Read-only
 type ReadonlyUser = Readonly<User>;
-// Tous les champs deviennent readonly
+// All fields become readonly
 ```
 
 ---
 
-## Pattern 9 : Const Assertions
+## Pattern 9: Const Assertions
 
-Pour les types littéraux :
+For literal types:
 
 ```typescript
-// Sans const assertion - type est string[]
+// Without const assertion - type is string[]
 const ROLES = ['admin', 'user', 'guest'];
 
-// Avec const assertion - type est readonly ['admin', 'user', 'guest']
+// With const assertion - type is readonly ['admin', 'user', 'guest']
 const ROLES = ['admin', 'user', 'guest'] as const;
 
-// Maintenant on peut dériver un type
+// Now we can derive a type
 type Role = (typeof ROLES)[number]; // 'admin' | 'user' | 'guest'
 
-// Utilisation
+// Usage
 function setRole(role: Role): void {
-  // N'accepte que 'admin', 'user', ou 'guest'
+  // Only accepts 'admin', 'user', or 'guest'
 }
 
-// Pour les objets aussi
+// For objects too
 const STATUS = {
   PENDING: 'pending',
   ACTIVE: 'active',
@@ -348,69 +348,69 @@ type Status = (typeof STATUS)[keyof typeof STATUS];
 
 ---
 
-## Pattern 10 : Narrowing avec Assertions
+## Pattern 10: Narrowing with Assertions
 
 ```typescript
-// Assertion de non-null
+// Non-null assertion
 function getUser(id: string): User | null {
   // ...
 }
 
 const user = getUser('123');
-// user est User | null
+// user is User | null
 
 if (user) {
-  // TypeScript sait que user est User ici
+  // TypeScript knows user is User here
   console.log(user.name);
 }
 
-// Avec assertion (à utiliser avec précaution)
+// With assertion (use with caution)
 const user = getUser('123')!; // Force non-null
-// Préférer une vérification explicite
+// Prefer an explicit check
 
-// Assertion de type
+// Type assertion
 const input = document.getElementById('email') as HTMLInputElement;
 input.value = 'test@example.com';
 ```
 
 ---
 
-## Référence Rapide : Alternatives à `any`
+## Quick Reference: Alternatives to `any`
 
-| Situation | Utiliser |
-|-----------|----------|
-| Type inconnu | `unknown` + type guard |
-| Tableau de types mixtes | Union type `(string \| number)[]` |
-| Objet avec clés dynamiques | `Record<string, T>` |
-| Fonction flexible | Generics `<T>` |
-| Plusieurs formes possibles | Discriminated union |
-| JSON d'une API | Interface + validation (Zod) |
-| Event handlers | Types d'événements appropriés |
-| Données tierces | Type guards |
-| Valeur optionnelle | `T \| undefined` ou `T \| null` |
-| Callback | Type de fonction explicite |
+| Situation | Use |
+|-----------|-----|
+| Unknown type | `unknown` + type guard |
+| Array of mixed types | Union type `(string \| number)[]` |
+| Object with dynamic keys | `Record<string, T>` |
+| Flexible function | Generics `<T>` |
+| Multiple possible shapes | Discriminated union |
+| JSON from an API | Interface + validation (Zod) |
+| Event handlers | Appropriate event types |
+| Third-party data | Type guards |
+| Optional value | `T \| undefined` or `T \| null` |
+| Callback | Explicit function type |
 
 ---
 
-## Anti-Patterns à Éviter
+## Anti-Patterns to Avoid
 
 ```typescript
-// ❌ Cast vers any pour contourner les erreurs
+// ❌ Cast to any to bypass errors
 const data = someValue as any;
 
-// ❌ Type assertion sans validation
+// ❌ Type assertion without validation
 const user = response as User;
 
-// ❌ Ignorer les erreurs TypeScript
+// ❌ Ignoring TypeScript errors
 // @ts-ignore
 const value = problematicCode();
 
-// ❌ any implicite (paramètres non typés)
+// ❌ Implicit any (untyped parameters)
 function process(data) {
-  // data est implicitement any
+  // data is implicitly any
 }
 
-// ✅ Toujours typer explicitement
+// ✅ Always type explicitly
 function process(data: ProcessInput): ProcessOutput {
   // ...
 }

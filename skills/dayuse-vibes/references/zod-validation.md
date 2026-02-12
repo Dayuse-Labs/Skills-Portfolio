@@ -1,25 +1,25 @@
-# Guide Validation avec Zod
+# Validation Guide with Zod
 
-Ce guide explique comment utiliser Zod pour valider les données entrantes.
+This guide explains how to use Zod to validate incoming data.
 
-## Pourquoi Zod ?
+## Why Zod?
 
-Zod offre deux avantages majeurs :
-1. **Validation runtime** - Vérifie les données à l'exécution (pas juste au compile)
-2. **Inférence de types** - Génère automatiquement les types TypeScript
+Zod offers two major advantages:
+1. **Runtime validation** - Checks data at runtime (not just at compile time)
+2. **Type inference** - Automatically generates TypeScript types
 
 ```typescript
 import { z } from 'zod';
 
-// Définir un schéma
+// Define a schema
 const UserSchema = z.object({
   name: z.string(),
   email: z.string().email(),
 });
 
-// TypeScript infère automatiquement le type
+// TypeScript automatically infers the type
 type User = z.infer<typeof UserSchema>;
-// Équivalent à : { name: string; email: string }
+// Equivalent to: { name: string; email: string }
 ```
 
 ---
@@ -32,31 +32,31 @@ npm install zod
 
 ---
 
-## Schémas de Base
+## Basic Schemas
 
-### Types Primitifs
+### Primitive Types
 
 ```typescript
 import { z } from 'zod';
 
-// Chaînes
+// Strings
 const stringSchema = z.string();
 const emailSchema = z.string().email();
 const urlSchema = z.string().url();
 const uuidSchema = z.string().uuid();
 
-// Avec contraintes
+// With constraints
 const nameSchema = z.string().min(2).max(100);
-const passwordSchema = z.string().min(8).regex(/[A-Z]/, 'Doit contenir une majuscule');
+const passwordSchema = z.string().min(8).regex(/[A-Z]/, 'Must contain an uppercase letter');
 
-// Nombres
+// Numbers
 const numberSchema = z.number();
-const positiveSchema = z.number().positive(); // Recommandé pour IDs, quantités
-const priceSchema = z.number().nonnegative(); // Recommandé pour prix
+const positiveSchema = z.number().positive(); // Recommended for IDs, quantities
+const priceSchema = z.number().nonnegative(); // Recommended for prices
 const intSchema = z.number().int();
 const rangeSchema = z.number().min(0).max(100);
 
-// Booléens
+// Booleans
 const boolSchema = z.boolean();
 
 // Dates
@@ -64,7 +64,7 @@ const dateSchema = z.date();
 const futureDateSchema = z.date().min(new Date());
 ```
 
-### Objets
+### Objects
 
 ```typescript
 const UserSchema = z.object({
@@ -79,20 +79,20 @@ const UserSchema = z.object({
 type User = z.infer<typeof UserSchema>;
 ```
 
-### Tableaux
+### Arrays
 
 ```typescript
-// Tableau de strings
+// Array of strings
 const tagsSchema = z.array(z.string());
 
-// Tableau avec contraintes
+// Array with constraints
 const itemsSchema = z.array(z.string()).min(1).max(10);
 
-// Tableau d'objets
+// Array of objects
 const usersSchema = z.array(UserSchema);
 ```
 
-### Unions et Enums
+### Unions and Enums
 
 ```typescript
 // Enum
@@ -122,29 +122,29 @@ const UserSchema = z.object({
   email: z.string().email(),
 });
 
-// parse() - Throw une erreur si invalide
+// parse() - Throws an error if invalid
 try {
   const user = UserSchema.parse(data);
-  // user est typé comme { name: string; email: string }
+  // user is typed as { name: string; email: string }
 } catch (error) {
   if (error instanceof z.ZodError) {
     console.log(error.issues);
   }
 }
 
-// safeParse() - Retourne un Result (RECOMMANDÉ)
+// safeParse() - Returns a Result (RECOMMENDED)
 const result = UserSchema.safeParse(data);
 
 if (result.success) {
-  // result.data est typé comme { name: string; email: string }
+  // result.data is typed as { name: string; email: string }
   console.log(result.data);
 } else {
-  // result.error contient les détails
+  // result.error contains the details
   console.log(result.error.issues);
 }
 ```
 
-### Intégration avec le Pattern Result
+### Integration with the Result Pattern
 
 ```typescript
 import { z } from 'zod';
@@ -173,7 +173,7 @@ function validate<T>(
   });
 }
 
-// Utilisation
+// Usage
 const CreateUserSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
@@ -190,38 +190,38 @@ function createUser(rawInput: unknown): Result<User, CreateUserError> {
   }
 
   const input = validationResult.data;
-  // Continuer avec input typé...
+  // Continue with typed input...
 }
 ```
 
 ---
 
-## Schémas pour DTOs
+## Schemas for DTOs
 
-### Input DTOs (Ce qu'on reçoit)
+### Input DTOs (What we receive)
 
 ```typescript
-// Création d'utilisateur
+// User creation
 export const CreateUserSchema = z.object({
-  name: z.string().min(2, 'Le nom doit faire au moins 2 caractères').max(100),
-  email: z.string().email('Email invalide'),
+  name: z.string().min(2, 'Name must be at least 2 characters').max(100),
+  email: z.string().email('Invalid email'),
   password: z
     .string()
-    .min(8, 'Le mot de passe doit faire au moins 8 caractères')
-    .regex(/[A-Z]/, 'Doit contenir une majuscule')
-    .regex(/[0-9]/, 'Doit contenir un chiffre'),
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Must contain an uppercase letter')
+    .regex(/[0-9]/, 'Must contain a digit'),
 });
 
 export type CreateUserInput = z.infer<typeof CreateUserSchema>;
 
-// Mise à jour (tous les champs optionnels)
+// Update (all fields optional)
 export const UpdateUserSchema = CreateUserSchema.partial().omit({
   password: true,
 });
 
 export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
 
-// Requête avec pagination
+// Request with pagination
 export const PaginationSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
@@ -235,7 +235,7 @@ export type PaginationInput = z.infer<typeof PaginationSchema>;
 ### Query Parameters
 
 ```typescript
-// Les query params sont toujours des strings, utiliser coerce
+// Query params are always strings, use coerce
 export const SearchQuerySchema = z.object({
   q: z.string().optional(),
   page: z.coerce.number().int().positive().default(1),
@@ -246,7 +246,7 @@ export const SearchQuerySchema = z.object({
     .default('true'),
 });
 
-// Utilisation avec Express
+// Usage with Express
 app.get('/users', (req, res) => {
   const result = SearchQuerySchema.safeParse(req.query);
   if (!result.success) {
@@ -264,16 +264,16 @@ app.get('/users', (req, res) => {
 ### Transform
 
 ```typescript
-// Normaliser un email
+// Normalize an email
 const EmailSchema = z
   .string()
   .email()
   .transform((email) => email.toLowerCase().trim());
 
-// Parser une date depuis une string
+// Parse a date from a string
 const DateStringSchema = z.string().transform((str) => new Date(str));
 
-// Extraire un champ
+// Extract a field
 const UserIdSchema = z
   .object({ user: z.object({ id: z.string() }) })
   .transform((data) => data.user.id);
@@ -282,13 +282,13 @@ const UserIdSchema = z
 ### Preprocess
 
 ```typescript
-// Nettoyer avant validation
+// Clean before validation
 const CleanStringSchema = z.preprocess(
   (val) => (typeof val === 'string' ? val.trim() : val),
   z.string().min(1)
 );
 
-// Convertir null en undefined
+// Convert null to undefined
 const OptionalSchema = z.preprocess(
   (val) => (val === null ? undefined : val),
   z.string().optional()
@@ -297,38 +297,38 @@ const OptionalSchema = z.preprocess(
 
 ---
 
-## Sanitisation et Sécurité
+## Sanitization and Security
 
-### Nettoyage des Entrées
+### Input Cleaning
 
-Utiliser `transform` ou `regex` pour nettoyer les entrées dangereuses (XSS, injections).
+Use `transform` or `regex` to clean dangerous inputs (XSS, injections).
 
 ```typescript
-// Enlever les balises HTML (XSS)
+// Remove HTML tags (XSS)
 const BioSchema = z.string()
   .transform((val) => val.replace(/<[^>]*>/g, ''));
 
-// Whitelist de caractères (SQL Injection protection basique)
+// Character whitelist (basic SQL Injection protection)
 const UsernameSchema = z.string()
-  .regex(/^[a-zA-Z0-9_-]+$/, 'Caractères spéciaux interdits');
+  .regex(/^[a-zA-Z0-9_-]+$/, 'Special characters are not allowed');
 ```
 
-### Sécuriser les Nombres
+### Securing Numbers
 
-Pour éviter les failles de logique métier (ex: acheter -5 articles pour être crédité), TOUJOURS restreindre les nombres.
+To prevent business logic flaws (e.g., buying -5 items to receive a credit), ALWAYS restrict numbers.
 
 ```typescript
-// ❌ DANGEREUX
+// BAD
 const QuantitySchema = z.number();
 
-// ✅ SÉCURISÉ
+// GOOD
 const QuantitySchema = z.number().int().positive(); // > 0
 const PriceSchema = z.number().nonnegative(); // >= 0
 ```
 
 ---
 
-## Validation Personnalisée
+## Custom Validation
 
 ### Refine
 
@@ -337,23 +337,23 @@ const PasswordSchema = z
   .string()
   .min(8)
   .refine((password) => /[A-Z]/.test(password), {
-    message: 'Doit contenir au moins une majuscule',
+    message: 'Must contain at least one uppercase letter',
   })
   .refine((password) => /[0-9]/.test(password), {
-    message: 'Doit contenir au moins un chiffre',
+    message: 'Must contain at least one digit',
   });
 
-// Validation asynchrone
+// Async validation
 const UniqueEmailSchema = z.string().email().refine(
   async (email) => {
     const exists = await checkEmailExists(email);
     return !exists;
   },
-  { message: 'Cet email est déjà utilisé' }
+  { message: 'This email is already in use' }
 );
 ```
 
-### SuperRefine (Accès au contexte)
+### SuperRefine (Context Access)
 
 ```typescript
 const PasswordConfirmSchema = z
@@ -365,7 +365,7 @@ const PasswordConfirmSchema = z
     if (data.password !== data.confirmPassword) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Les mots de passe ne correspondent pas',
+        message: 'Passwords do not match',
         path: ['confirmPassword'],
       });
     }
@@ -374,51 +374,51 @@ const PasswordConfirmSchema = z
 
 ---
 
-## Messages d'Erreur Personnalisés
+## Custom Error Messages
 
 ```typescript
 const UserSchema = z.object({
   name: z.string({
-    required_error: 'Le nom est requis',
-    invalid_type_error: 'Le nom doit être une chaîne',
-  }).min(2, { message: 'Le nom doit faire au moins 2 caractères' }),
+    required_error: 'Name is required',
+    invalid_type_error: 'Name must be a string',
+  }).min(2, { message: 'Name must be at least 2 characters' }),
 
-  email: z.string().email({ message: 'Format d\'email invalide' }),
+  email: z.string().email({ message: 'Invalid email format' }),
 
   age: z
-    .number({ invalid_type_error: 'L\'âge doit être un nombre' })
-    .int({ message: 'L\'âge doit être un entier' })
-    .positive({ message: 'L\'âge doit être positif' }),
+    .number({ invalid_type_error: 'Age must be a number' })
+    .int({ message: 'Age must be an integer' })
+    .positive({ message: 'Age must be positive' }),
 });
 ```
 
 ---
 
-## Bonnes Pratiques
+## Best Practices
 
-### 1. Valider à la Frontière
+### 1. Validate at the Boundary
 
 ```typescript
-// ✅ Valider dès l'entrée dans le système
+// Validate as soon as data enters the system
 app.post('/users', async (req, res) => {
   const result = CreateUserSchema.safeParse(req.body);
   if (!result.success) {
     return res.status(400).json({ errors: result.error.issues });
   }
-  // result.data est maintenant typé et validé
+  // result.data is now typed and validated
   const user = await createUserUseCase.execute(result.data);
 });
 ```
 
-### 2. Schémas Réutilisables
+### 2. Reusable Schemas
 
 ```typescript
-// Définir des schémas de base
+// Define base schemas
 const EmailSchema = z.string().email().toLowerCase();
 const NameSchema = z.string().min(2).max(100).trim();
 const IdSchema = z.string().uuid();
 
-// Composer pour les DTOs
+// Compose for DTOs
 const CreateUserSchema = z.object({
   name: NameSchema,
   email: EmailSchema,
@@ -432,7 +432,7 @@ const UserSchema = z.object({
 });
 ```
 
-### 3. Exporter Types et Schémas Ensemble
+### 3. Export Types and Schemas Together
 
 ```typescript
 // user.schemas.ts
@@ -455,16 +455,16 @@ export const UserResponseSchema = z.object({
 export type UserResponse = z.infer<typeof UserResponseSchema>;
 ```
 
-### 4. Ne Jamais Faire Confiance aux Données Externes
+### 4. Never Trust External Data
 
 ```typescript
-// ❌ MAUVAIS - fait confiance aux données
+// BAD - trusts the data
 async function handleWebhook(req: Request): Promise<void> {
   const { userId, action } = req.body;
   await processAction(userId, action);
 }
 
-// ✅ BON - valide toujours
+// GOOD - always validate
 const WebhookSchema = z.object({
   userId: z.string().uuid(),
   action: z.enum(['created', 'updated', 'deleted']),
@@ -474,7 +474,7 @@ const WebhookSchema = z.object({
 async function handleWebhook(req: Request): Promise<void> {
   const result = WebhookSchema.safeParse(req.body);
   if (!result.success) {
-    throw new Error('Payload webhook invalide');
+    throw new Error('Invalid webhook payload');
   }
   await processAction(result.data.userId, result.data.action);
 }
