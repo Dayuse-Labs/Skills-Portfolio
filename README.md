@@ -4,7 +4,7 @@
 
 **Supercharge your AI coding assistants with Dayuse best practices**
 
-[![Skills](https://img.shields.io/badge/Skills-1-blue?style=for-the-badge)](#available-skills)
+[![Skills](https://img.shields.io/badge/Skills-3-blue?style=for-the-badge)](#available-skills)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Compatible-orange?style=for-the-badge)](#claude-code)
 [![Cursor](https://img.shields.io/badge/Cursor-Compatible-purple?style=for-the-badge)](#cursor)
 [![Antigravity](https://img.shields.io/badge/Antigravity-Compatible-green?style=for-the-badge)](#antigravity)
@@ -28,11 +28,47 @@
 
 ### Dayuse Vibes
 
-Enforces professional standards for robust, maintainable code.
+Enforces professional standards for robust, maintainable TypeScript code.
 
 **Includes:** DDD Architecture | Strict TypeScript | Testing | Zod Validation | Result Pattern
 
-[**Download ZIP**](skills/dayuse-vibes.zip) | [**View Source**](skills/dayuse-vibes/SKILL.md)
+[**View Source**](skills/dayuse-vibes/SKILL.md)
+
+</td>
+</tr>
+<tr>
+<td width="120" align="center">
+<br>
+<img src="https://img.icons8.com/fluency/96/php.png" width="48"/>
+<br><br>
+</td>
+<td>
+
+### PHP Dayuse
+
+Senior PHP developer skill for Symfony, Doctrine, and modern PHP 8.4+.
+
+**Includes:** Strict Typing | PHPStan Level 10 | DDD Patterns | Symfony 7 | Doctrine ORM | PHPUnit
+
+[**View Source**](skills/php-dayuse/SKILL.md)
+
+</td>
+</tr>
+<tr>
+<td width="120" align="center">
+<br>
+<img src="https://img.icons8.com/fluency/96/console.png" width="48"/>
+<br><br>
+</td>
+<td>
+
+### Dayuse App
+
+Local development commands for the Dayuse.com project via Python Invoke.
+
+**Includes:** Docker | PHPUnit | PHPStan | CS-Fixer | ESLint | Migrations | Elasticsearch | Translations
+
+[**View Source**](skills/dayuse-app/SKILL.md)
 
 </td>
 </tr>
@@ -40,16 +76,28 @@ Enforces professional standards for robust, maintainable code.
 
 ---
 
-## Quick Start
+## Installation
 
-Choose your AI coding assistant below to get started:
+### Via `npx` (Recommended)
+
+Install all Dayuse skills at once with a single command:
+
+```bash
+npx skills add https://github.com/Dayuse-Labs/Skills-Portfolio
+```
+
+This will automatically download and configure all available skills for your environment.
+
+### Manual Installation
+
+Choose your AI coding assistant below:
 
 <details>
 <summary><strong>Claude Code</strong></summary>
 
 <br>
 
-1. **Download** the skill ZIP file from the table above
+1. **Download** the skill ZIP file
 2. Navigate to **Settings > Capabilities**
 3. In the **Skills** section, click **"Upload skill"**
 4. Upload your ZIP file
@@ -102,11 +150,16 @@ Mention the skill file directly in Chat or Composer:
 ## Repository Structure
 
 ```
-dayuse-skills/
+skills-portfolio/
 ├── skills/
-│   ├── dayuse-vibes.zip      # Ready-to-use package
-│   └── dayuse-vibes/
-│       └── SKILL.md          # Skill definition
+│   ├── dayuse-vibes/
+│   │   ├── SKILL.md              # TypeScript / Vibe Coding standards
+│   │   └── references/           # Detailed guides (DDD, testing, etc.)
+│   ├── php-dayuse/
+│   │   ├── SKILL.md              # PHP / Symfony standards
+│   │   └── references/           # Detailed guides (Doctrine, async, etc.)
+│   └── dayuse-app/
+│       └── SKILL.md              # Local dev commands (Docker, tests, lint)
 └── README.md
 ```
 
@@ -119,7 +172,6 @@ Want to add a new skill? Here's how:
 1. Create a new directory under `skills/` (e.g., `skills/react-patterns`)
 2. Add a `SKILL.md` file defining rules, patterns, and examples
 3. Update this README with your skill in the [Available Skills](#available-skills) section
-4. Create a ZIP package for easy distribution
 
 ---
 
