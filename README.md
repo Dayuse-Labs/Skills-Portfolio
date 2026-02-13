@@ -4,7 +4,7 @@
 
 **Supercharge your AI coding assistants with Dayuse best practices**
 
-[![Skills](https://img.shields.io/badge/Skills-3-blue?style=for-the-badge)](#available-skills)
+[![Skills](https://img.shields.io/badge/Skills-4-blue?style=for-the-badge)](#available-skills)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Compatible-orange?style=for-the-badge)](#claude-code)
 [![Cursor](https://img.shields.io/badge/Cursor-Compatible-purple?style=for-the-badge)](#cursor)
 [![Antigravity](https://img.shields.io/badge/Antigravity-Compatible-green?style=for-the-badge)](#antigravity)
@@ -69,6 +69,24 @@ Local development commands for the Dayuse.com project via Python Invoke.
 **Includes:** Docker | PHPUnit | PHPStan | CS-Fixer | ESLint | Migrations | Elasticsearch | Translations
 
 [**View Source**](skills/dayuse-app/SKILL.md)
+
+</td>
+</tr>
+<tr>
+<td width="120" align="center">
+<br>
+<img src="https://img.icons8.com/fluency/96/presentation.png" width="48"/>
+<br><br>
+</td>
+<td>
+
+### Dayuse PPTX
+
+Creates Dayuse-branded presentations (PPTX) with consistent visual identity and storytelling structure.
+
+**Includes:** Brand Guidelines | Gradient System | Manrope Typography | Slide Patterns | Asset Catalog | Storytelling Framework
+
+[**View Source**](skills/dayuse-pptx/SKILL.md)
 
 </td>
 </tr>
@@ -158,8 +176,13 @@ skills-portfolio/
 │   ├── php-dayuse/
 │   │   ├── SKILL.md              # PHP / Symfony standards
 │   │   └── references/           # Detailed guides (Doctrine, async, etc.)
-│   └── dayuse-app/
-│       └── SKILL.md              # Local dev commands (Docker, tests, lint)
+│   ├── dayuse-app/
+│   │   └── SKILL.md              # Local dev commands (Docker, tests, lint)
+│   └── dayuse-pptx/
+│       ├── SKILL.md              # Dayuse-branded PPTX presentations
+│       ├── assets/               # Brand logos, photos, icons, brand guide
+│       ├── references/           # Icon catalog, detailed guides
+│       └── scripts/              # Asset preprocessing (logo transparency)
 └── README.md
 ```
 
