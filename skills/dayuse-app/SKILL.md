@@ -7,13 +7,12 @@ description: "Run local development commands on the Dayuse.com project. Use when
 
 ## Overview
 
-All local development commands for the Dayuse.com project use **Python Invoke** (prefixed with `inv`) and **must be run through pipenv** from the project root.
+All local development commands for the Dayuse.com project use **Python Invoke** (prefixed with `inv`) and **must be run through pipenv** from the current working directory.
 
 ## Prerequisites
 
 - Docker Desktop running
 - pipenv installed (`pip install pipenv`)
-- Working directory: `/Users/fabiendauvergne/PhpstormProjects/dayuse-com`
 
 ## Critical Rules
 
@@ -21,9 +20,8 @@ All local development commands for the Dayuse.com project use **Python Invoke** 
    ```bash
    pipenv run inv <command>
    ```
-2. **Always run from the project root**: `/Users/fabiendauvergne/PhpstormProjects/dayuse-com`
-3. **Docker containers must be running** for most commands. If unsure, run `pipenv run inv up` first.
-4. **Never run `inv` directly** without `pipenv run` — it may use the wrong Python/invoke version.
+2. **Docker containers must be running** for most commands. If unsure, run `pipenv run inv up` first.
+3. **Never run `inv` directly** without `pipenv run` — it may use the wrong Python/invoke version.
 
 ---
 
@@ -329,7 +327,6 @@ pipenv run inv phpunit
 **Solution**:
 ```bash
 pip install pipenv
-cd /Users/fabiendauvergne/PhpstormProjects/dayuse-com
 pipenv install
 ```
 
