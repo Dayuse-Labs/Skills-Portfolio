@@ -1,5 +1,5 @@
 ---
-name: "Dayuse App Commands"
+name: "dayuse-commands"
 description: "Run local development commands on the Dayuse.com project. Use when starting/stopping Docker, running PHP tests (PHPUnit), frontend tests, linting (PHPStan, CS-Fixer, ESLint), database migrations, Elasticsearch indexing, translations, or any inv task. All commands require pipenv and Docker."
 ---
 
