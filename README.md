@@ -184,6 +184,7 @@ skills-portfolio/
 │       ├── assets/               # Brand logos, photos, icons, brand guide
 │       ├── references/           # Icon catalog, detailed guides
 │       └── scripts/              # Asset preprocessing (logo transparency)
+├── version.txt                    # Current version (managed by release-please)
 └── README.md
 ```
 
