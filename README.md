@@ -4,6 +4,7 @@
 
 **Supercharge your AI coding assistants with Dayuse best practices**
 
+[![Version](https://img.shields.io/github/v/release/Dayuse-Labs/Skills-Portfolio?style=for-the-badge)](https://github.com/Dayuse-Labs/Skills-Portfolio/releases)
 [![Skills](https://img.shields.io/badge/Skills-4-blue?style=for-the-badge)](#available-skills)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Compatible-orange?style=for-the-badge)](#claude-code)
 [![Cursor](https://img.shields.io/badge/Cursor-Compatible-purple?style=for-the-badge)](#cursor)
