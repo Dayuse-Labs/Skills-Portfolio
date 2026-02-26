@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0](https://github.com/Dayuse-Labs/Skills-Portfolio/compare/v1.1.0...v1.2.0) (2026-02-26)
+
+
+### Features
+
+* update dayuse-pptx skill to v3.0.0 and add frontend-design-dayuse skill ([311bfa9](https://github.com/Dayuse-Labs/Skills-Portfolio/commit/311bfa9831daa9d044debf72400a9a58d9b9e773))
+* update dayuse-pptx v3.0.0 & add frontend-design-dayuse skill ([cf61282](https://github.com/Dayuse-Labs/Skills-Portfolio/commit/cf61282e0ffe7b63e6a689464e9eb2561e38d1d7))
+
 ## [1.1.0](https://github.com/Dayuse-Labs/Skills-Portfolio/compare/v1.0.0...v1.1.0) (2026-02-17)
 
 
