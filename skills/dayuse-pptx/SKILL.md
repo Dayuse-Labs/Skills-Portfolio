@@ -3,24 +3,15 @@ name: dayuse-pptx
 description: Creates Dayuse-branded presentations (PPTX) with consistent visual identity and storytelling structure. Use when the user asks to create a presentation, deck, slides, pitch deck, roadmap, reporting, plan d'action, or any PPTX for Dayuse. Also use when user mentions "prez Dayuse", "deck Dayuse", "slides internes", "pitch hotel", or "presentation partenaire". Handles both external pitch decks and internal strategy/reporting presentations. Do NOT use for non-Dayuse presentations.
 metadata:
   author: Dayuse
-  version: 2.1.0
+  version: 3.0.0
   category: document-creation
 ---
 
 # Dayuse PPTX Skill
 
-This skill creates Dayuse-branded presentations following the company's visual identity (sourced from the official Figma brand guidelines), storytelling framework, and slide patterns.
+This skill creates Dayuse-branded presentations following the company's visual identity, storytelling framework, and slide patterns. All brand assets are embedded locally — no external dependencies required.
 
 **Before creating any presentation, always also read the main `pptx` skill** for technical guidance on creating PPTX files with PptxGenJS.
-
-### Figma Sources
-
-| Resource | File Key | Content |
-|----------|----------|---------|
-| **Design System v2.0.3** | `1kQ21QwHaQxQrfR1Ozz7ys` | 187 icons (8 categories), colors, typography, components |
-| **ICONS-LIBRARY** | `VYZeBPPWPcilQddvldU8w0` | Réassurance gradient + UI icon sets |
-| **Image Bank** | `VU7niZDEMGOhmquJcpAk2P` | 35+ lifestyle photos (photoshoot June 2023) |
-| **On-boarding Assets** | `XVlA3zCtO7jJ4GI4oaFLCV` | App screens, splash, UI components |
 
 ---
 
@@ -32,7 +23,7 @@ All brand assets are organized in `assets/`. **ALWAYS use these real assets rath
 
 | File | Description | Usage | Aspect Ratio |
 |------|-------------|-------|--------------|
-| `logo-gradient.png` | Wordmark "DAYUSE" in expressive gradient (jaune → orange → corail → bleu) | OOH, social, printed merch, expressive presentations. **Requires background removal preprocessing.** | 2:1 |
+| `logo-gradient.png` | Wordmark "DAYUSE" in expressive gradient (jaune → orange → corail → bleu). Already transparent (RGBA). | OOH, social, printed merch, expressive presentations. | 2:1 |
 | `logo-black.png` | Wordmark "DAYUSE" in Evening Blue `292935` | Website, web banners, formal documents, toned-down communications | 2:1 |
 
 ### Icons / Symbols (assets/icons/)
@@ -43,9 +34,7 @@ All brand assets are organized in `assets/`. **ALWAYS use these real assets rath
 | `icon-black.png` | "Y" symbol in Evening Blue circle | Functional use: slide footers, small placements, formal contexts |
 | `icon-app.png` | App icon (Y symbol on rounded-square gradient background) | App references, product mockups |
 
-### Image Bank (Figma — Photoshoot "New Brand June 2023")
-
-**Source**: Figma file `VU7niZDEMGOhmquJcpAk2P`
+### Image Bank (Photoshoot "New Brand June 2023")
 
 The Dayuse Image Bank is the official repository of brand photography for all channels (CRM, Social Media, Website, presentations). It contains **35+ retouched, validated lifestyle photos** from the June 2023 brand photoshoot.
 
@@ -63,49 +52,57 @@ The Dayuse Image Bank is the official repository of brand photography for all ch
 
 #### Available Photos (assets/photos/)
 
-| File | Theme | Description |
-|------|-------|-------------|
-| `hero_girl_bed_room.jpg` | Chambre | Femme sur lit d'hôtel — hero/cover slide |
-| `bed-1.jpg` | Chambre | Scène de chambre d'hôtel |
-| `bath-2-1.jpg` | Spa/Wellness | Scène de salle de bain |
-| `couplepool.jpg` | Piscine | Couple à la piscine |
-| `girlpool.jpg` | Piscine | Femme à la piscine |
-| `coupleontop.jpg` | Couple | Couple en extérieur |
-| `frenchcouple_ontop.jpg` | Couple | Couple lifestyle |
-| `girl_la_view_swimsuit.jpg` | Lifestyle | Femme avec vue panoramique |
-| `dayuse_20_01_251245-1.jpg` | Brand shoot | Photo shoot officiel |
-| `dayuse_20_01_251524-1.jpg` | Brand shoot | Photo shoot officiel |
-| `dayuse_20_01_251693-2-1.jpg` | Brand shoot | Photo shoot officiel |
+| File | Theme | Dimensions | Orientation | Allowed Usage |
+|------|-------|-----------|-------------|---------------|
+| `hero_girl_bed_room.jpg` | Chambre | 1920×1920 | Square | Full-bleed (with coverCrop), half-bleed, card |
+| `bed-1.jpg` | Chambre | 1920×1280 | **Landscape** | ✅ Full-bleed, half-bleed, card |
+| `bath-2-1.jpg` | Spa/Wellness | 1920×1280 | **Landscape** | ✅ Full-bleed, half-bleed, card |
+| `coupleontop.jpg` | Couple | 1920×1440 | **Landscape** | ✅ Full-bleed, half-bleed, card |
+| `girl_la_view_swimsuit.jpg` | Lifestyle | 1920×1440 | **Landscape** | ✅ Full-bleed, half-bleed, card |
+| `dayuse_20_01_251524-1.jpg` | Brand shoot | 1506×1036 | **Landscape** | ✅ Full-bleed, half-bleed, card |
+| `couplepool.jpg` | Piscine | 1440×1920 | Portrait | ⚠️ Half-bleed or card ONLY |
+| `girlpool.jpg` | Piscine | 1440×1920 | Portrait | ⚠️ Half-bleed or card ONLY |
+| `frenchcouple_ontop.jpg` | Couple | 1280×1920 | Portrait | ⚠️ Half-bleed or card ONLY |
+| `dayuse_20_01_251245-1.jpg` | Brand shoot | 979×1468 | Portrait | ⚠️ Half-bleed or card ONLY |
+| `dayuse_20_01_251693-2-1.jpg` | Brand shoot | 953×1481 | Portrait | ⚠️ Half-bleed or card ONLY |
 
-> **Note**: `POOL 1.png` (311 MB / 460M pixels) a été exclu car trop volumineux. Ré-exporter depuis Figma à ≤4000px de large.
+> **⚠️ CRITICAL PHOTO RULE**: Portrait photos (ratio < 1.0) must NEVER be used as full-bleed slide backgrounds — they would be aggressively cropped or distorted on a 16:9 slide. Use them in half-bleed (left or right half) or card crop layouts only. For full-bleed backgrounds, use ONLY landscape or square photos.
 
 #### Photo Style Guidelines (for Presentations)
-- **Full-bleed**: Use photos as full-slide backgrounds for cover or closing slides
-- **Half-bleed**: Photo on one half, content on the other (50/50 split)
-- **Card crop**: Crop photos into rounded rectangles (`rectRadius: 0.12`) for cards
+- **Full-bleed**: Use LANDSCAPE photos as full-slide backgrounds for cover or closing slides. Always use `coverCrop()` to avoid distortion.
+- **Half-bleed**: Photo on one half, content on the other (50/50 split). Both landscape and portrait photos work here.
+- **Card crop**: Crop photos into rounded rectangles (`rectRadius: 0.12`) for cards. Any orientation works.
 - **Overlay**: Photo with gradient text overlay (see `assets/brand-guide/images-best-practice.png`)
 - **Always** use brand gradient band at bottom when photo is NOT full-bleed
 
 ```javascript
+// coverCrop — center-crop a photo to fill a target area (like CSS object-fit: cover)
+// Use this for ALL full-bleed photo backgrounds to avoid distortion
+async function coverCrop(imagePath, targetW, targetH) {
+  const meta = await sharp(imagePath).metadata();
+  const targetRatio = targetW / targetH;
+  const imgRatio = meta.width / meta.height;
+  let region;
+  if (imgRatio > targetRatio) {
+    const newW = Math.round(meta.height * targetRatio);
+    region = { left: Math.round((meta.width - newW) / 2), top: 0, width: newW, height: meta.height };
+  } else {
+    const newH = Math.round(meta.width / targetRatio);
+    region = { left: 0, top: Math.round((meta.height - newH) / 2), width: meta.width, height: newH };
+  }
+  const buf = await sharp(imagePath).extract(region).resize(targetW, targetH).jpeg({ quality: 85 }).toBuffer();
+  return "image/jpeg;base64," + buf.toString("base64");
+}
+
 // Example — full-bleed photo background with text overlay:
-slide.addImage({ path: "assets/photos/hero_girl_bed_room.jpg", x: 0, y: 0, w: 10, h: 5.625 });
+const bgData = await coverCrop("assets/photos/bed-1.jpg", 1920, 1080);
+slide.addImage({ data: bgData, x: 0, y: 0, w: 10, h: 5.625 });
 // Add semi-transparent overlay for text readability:
 slide.addShape(pptx.shapes.RECTANGLE, { x: 0, y: 3.5, w: 10, h: 2.125, fill: { color: "292935", transparency: 40 } });
 slide.addText("Room to daydream.", { x: 0.6, y: 3.8, w: 8.8, fontSize: 36, fontFace: "Manrope", color: "FFFFFF", bold: true });
 ```
 
-### On-boarding Assets (Figma Reference)
-
-**Source**: Figma file `XVlA3zCtO7jJ4GI4oaFLCV` (node `445:3150`)
-
-Contains mobile app onboarding screens, splash screens, and UI component variations. Useful as reference for:
-- **Product mockups** in pitch decks (screenshot the app screens)
-- **App UI illustrations** for product slides
-- **Onboarding flow diagrams** for internal roadmap presentations
-
 ### Marketing Icons — "Réassurance Gradient" (assets/icons/marketing-icons.json)
-
-**Source**: Figma ICONS-LIBRARY (`VYZeBPPWPcilQddvldU8w0`)
 
 19 SVG icons with **brand gradient fills** (orange/coral/yellow). ViewBox 49x49. Used for pitch decks, marketing materials, value propositions. All icons are stored in a single JSON file: `assets/icons/marketing-icons.json` (key = icon name, value = SVG string).
 
@@ -132,8 +129,6 @@ Contains mobile app onboarding screens, splash screens, and UI component variati
 | `-75pct` | Discount tag | Discounts, savings |
 
 ### UI Icons — Design System (assets/icons/ui-icons.json)
-
-**Source**: Figma Design System v2.0.3 — exported SVGs
 
 184 SVG icons in **flat outline style** (stroke `#292935` Evening Blue). ViewBox 24x24. Used for all presentation contexts. All icons are stored in a single JSON file: `assets/icons/ui-icons.json` (key = icon name, value = SVG string).
 
@@ -169,22 +164,28 @@ async function marketingIconPng(name, size = 128) {
   return "image/png;base64," + buf.toString("base64");
 }
 
+// ⚠️ MANDATORY — Use placeIcon() to add ANY icon to a slide. Never use addImage() directly for icons.
+// This enforces the 1:1 ratio rule and prevents distorted icons.
+function placeIcon(slide, data, x, y, size) {
+  slide.addImage({ data, x, y, w: size, h: size }); // w === h ALWAYS
+}
+
 // Examples:
 const wifiCoral = await uiIconPng("wifi", "#FDAA9A");          // coral
 const starOrange = await uiIconPng("ind-star", "#F66236");     // orange
 const checkWhite = await uiIconPng("nav-check", "#FFFFFF");    // white (for dark bg)
 const alertPink = await uiIconPng("ind-alert", "#FF003E");     // hot pink
-slide.addImage({ data: wifiTeal, x: 1, y: 1, w: 0.4, h: 0.4 });
+placeIcon(slide, wifiCoral, 1, 1, 0.4);  // 0.4" square
 
 const hotelIcon = await marketingIconPng("hotel");
-slide.addImage({ data: hotelIcon, x: 1, y: 1, w: 0.5, h: 0.5 });
+placeIcon(slide, hotelIcon, 1, 1, 0.5);  // 0.5" square
 ```
 
 > **Recoloring**: UI icons use `stroke="#292935"` — easy to recolor via the `color` param. Marketing icons have **baked-in brand gradients** (linearGradient orange→coral→yellow) — use as-is.
 
 ### Brand Guide References (assets/brand-guide/)
 
-These are exported Figma pages for visual reference when designing slides:
+These are exported pages for visual reference when designing slides:
 
 | File | Content |
 |------|---------|
@@ -199,7 +200,7 @@ These are exported Figma pages for visual reference when designing slides:
 | `layouts-best-practice.png` | Diverse layout examples (portrait, landscape, stories) |
 | `images-best-practice.png` | Image + gradient text overlay example |
 
-### Logo Usage Rules (from Figma Brand Guidelines)
+### Logo Usage Rules (from Brand Guidelines)
 
 **CRITICAL RULES:**
 - The **symbol** (Y icon) and **wordmark** (DAYUSE text) each have their own place and time. **NEVER use them as a lock-up together** on the same element. They CAN appear on the same layout, but never combined as one unit.
@@ -210,26 +211,23 @@ These are exported Figma pages for visual reference when designing slides:
 
 ---
 
-## Step 0: Preprocess Assets (MANDATORY)
+## Step 0: Prepare Assets (MANDATORY)
 
 Run these steps BEFORE writing any slide code.
 
-### Logo — Remove Black Background
+### Logos — Ready to Use (No Preprocessing Needed)
 
-The source logos (gradient versions) are RGB with a **black background**. They MUST be converted to transparent PNG before use, or they will display as an ugly black rectangle on slides.
+All logo and icon PNGs already have **transparent backgrounds (RGBA)**. Use them directly from `assets/logos/` and `assets/icons/`. No preprocessing required.
 
-```bash
-python scripts/preprocess-logo.py assets/logos/logo-gradient.png /tmp/dayuse-logo-gradient.png
-python scripts/preprocess-logo.py assets/icons/icon-gradient.png /tmp/dayuse-icon-gradient.png
+```javascript
+// Use assets directly — they are already transparent
+const LOGO_GRADIENT = "assets/logos/logo-gradient.png";
+const LOGO_BLACK = "assets/logos/logo-black.png";
+const ICON_GRADIENT = "assets/icons/icon-gradient.png";
+const ICON_BLACK = "assets/icons/icon-black.png";
 ```
 
-Also prepare the black versions (which have white backgrounds to remove):
-```bash
-python scripts/preprocess-logo.py assets/logos/logo-black.png /tmp/dayuse-logo-black.png
-python scripts/preprocess-logo.py assets/icons/icon-black.png /tmp/dayuse-icon-black.png
-```
-
-Then use `/tmp/dayuse-*.png` everywhere. NEVER use the raw asset files directly.
+> **Legacy note**: `scripts/preprocess-logo.py` exists as a fallback if logos are ever re-exported with opaque backgrounds. Currently NOT needed.
 
 ### ⚠️ CRITICAL — Image & Icon Aspect Ratio (NO DISTORTION)
 
@@ -284,7 +282,7 @@ The wordmark logos are 2000x1000px = **exactly 2:1 ratio**. Always maintain this
 // CORRECT — 2:1 ratio maintained
 const LOGO_W = 1.8;
 const LOGO_H = LOGO_W / 2; // = 0.9
-slide.addImage({ path: "/tmp/dayuse-logo-gradient.png", x: 0.6, y: 0.4, w: LOGO_W, h: LOGO_H });
+slide.addImage({ path: "assets/logos/logo-gradient.png", x: 0.6, y: 0.4, w: LOGO_W, h: LOGO_H });
 
 // WRONG — distorted logo
 slide.addImage({ path: logo, x: 0.6, y: 0.4, w: 1.8, h: 0.5 }); // squished!
@@ -354,15 +352,13 @@ async function makeGenericGradientBg(width = 1920, height = 1080) {
 // #FDAA9A → #C88AAE → #6E69AC
 ```
 
-**DIRECTION RULE (from Figma):**
+**DIRECTION RULE:**
 - Gradient on **text**: direction top-left → bottom-right (reading direction)
 - Gradient as **background**: direction bottom-left → top-right
 
 ### Icons — Dayuse Custom Icon Library (187 icons)
 
 **Full catalog**: See `references/icon-catalog.md` for the complete list of 187 icons with names, descriptions, and react-icons equivalents.
-
-**Source**: Figma Design System v2.0.3 — Icons page (node `40:927`)
 
 #### 8 Categories:
 
@@ -421,7 +417,7 @@ Install deps: `npm install -g react-icons react react-dom sharp`
 
 ---
 
-## Step 1: Identify the Deck Type
+## Step 1: Identify the Deck Type & Dynamic Parameters
 
 Ask the user (if not clear) which type of deck they need:
 
@@ -431,6 +427,29 @@ Ask the user (if not clear) which type of deck they need:
 | **Reporting interne** | Equipe, management, board | FR (primarily) | Data-driven, actionable, honest |
 | **Roadmap / Plan d'action** | Equipe produit, strat, ops | FR | Vision-first, structured, progressive |
 | **Analyse stratégique** | Management, cross-functional | FR | Analytical, insight-led, recommendation-oriented |
+
+### Dynamic Parameters (ask user or infer from context)
+
+These values should NEVER be hardcoded — always determine them from user input:
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `author_name` | Name to display on cover slide | *(omit if not relevant)* |
+| `author_role` | Title/role under author name | *(omit if not relevant)* |
+| `closing_message` | Custom closing text | *(see table below)* |
+| `language` | FR or EN | FR for internal, ask for external |
+
+### Closing Message by Deck Type
+
+| Deck Type | Closing Message | CTA |
+|-----------|----------------|-----|
+| Pitch externe (hôteliers) | `ROOM TO DAYDREAM` | Discover our hotels → dayuse.com |
+| Pitch externe (investisseurs) | `ROOM TO DAYDREAM` | Contact email |
+| Reporting interne | *(none — just logo + gradient band)* | — |
+| Roadmap / Plan d'action | `LET'S BUILD THIS` | Next steps → owner |
+| Analyse stratégique | *(none — just logo + gradient band)* | — |
+
+> **IMPORTANT**: Do NOT use "MADE WITH LOVE AT DAYUSE" on reporting or strategy decks. This phrase is for marketing/brand contexts only.
 
 ---
 
@@ -521,7 +540,7 @@ Le spectre de couleurs Dayuse représente un voyage émotionnel (de gauche à dr
 - **Gauche (chaud)**: Liberté, Soleil, Joie, Bonheur, Intensité, Amour
 - **Droite (frais)**: Bien-être, Ciel, Paisibilité, Calme, Temps pour soi, Ressource
 
-### Contrast Rule (from Figma)
+### Contrast Rule
 "Font should always maximise lisibility and strong contrast." Always alternate:
 - **Dark text** (`292935`) on light backgrounds (`FFFFFF`, `F8F8F8`, gradients clairs)
 - **White text** (`FFFFFF`) on dark backgrounds (`292935`), colored backgrounds (Yellow, Orange, Hot Pink), or gradient backgrounds
@@ -537,7 +556,7 @@ Allowed slide backgrounds:
 - `FEB900` (yellow) — for bold statement slides (e.g. "Only 3% of French people have heard of Dayuse")
 - A lifestyle **photo** as full-bleed background (for closing slides)
 
-The only exception where `292935` can be used as a SHAPE fill (not slide bg) is for small accent elements like the "Victor Barnouin" card or data pill badges.
+The only exception where `292935` can be used as a SHAPE fill (not slide bg) is for small accent elements like author name cards or data pill badges.
 
 ---
 
@@ -639,10 +658,10 @@ Implementation: **Title text in Evening Blue bold + key words in Orange bold** t
 
 ```javascript
 slide.addText([
-  { text: "L'IA gère le ", options: { fontSize: 26, fontFace: "Manrope", color: "292935", bold: true } },
-  { text: "volume", options: { fontSize: 26, fontFace: "Manrope", color: "F66236", bold: true } },
-  { text: ", l'humain gère ", options: { fontSize: 26, fontFace: "Manrope", color: "292935", bold: true } },
-  { text: "l'exception.", options: { fontSize: 26, fontFace: "Manrope", color: "F66236", bold: true } },
+  { text: "Le daytime génère ", options: { fontSize: 26, fontFace: "Manrope", color: "292935", bold: true } },
+  { text: "+59% de RevPAR", options: { fontSize: 26, fontFace: "Manrope", color: "F66236", bold: true } },
+  { text: " sur les créneaux ", options: { fontSize: 26, fontFace: "Manrope", color: "292935", bold: true } },
+  { text: "sous-exploités.", options: { fontSize: 26, fontFace: "Manrope", color: "F66236", bold: true } },
 ], { x: 0.6, y: 0.3, w: 8.8, h: 0.8, margin: 0 });
 ```
 
@@ -659,7 +678,7 @@ Reference: `assets/brand-guide/gradients-4types.png`
 | **Complementary 1** | Blues/teals spectrum | Balance in an ensemble of visual, webpage, brochure pages |
 | **Complementary 2** | Corail → Violet | Balance in an ensemble of visual, webpage, brochure pages |
 
-### Gradient Usage Rules (from Figma)
+### Gradient Usage Rules
 
 1. **On text**: Direction top-left → bottom-right (reading direction). Gradients can ONLY be used on **hero titles (Manrope ExtraBold 800)** as a title or main message. **Never apply gradient to body text or secondary elements.**
 2. **On backgrounds**: Direction bottom-left → top-right. Should generally NOT be used with an image on top (exception: for balance).
@@ -797,7 +816,7 @@ async function makeGradientText(text, fontSize = 80, width = 1920, height = 300)
 
 1. Confirm deck type, audience, content with user
 2. Propose structure de slides (titres-insights) pour validation
-3. **Preprocess assets** : logo transparency + gradient band + gradient backgrounds
+3. **Prepare assets** : gradient band + gradient backgrounds (logos are ready to use)
 4. Build PPTX via `pptx` skill PptxGenJS workflow
 5. Apply ALL Dayuse visual identity rules
 6. QA via pptx skill verification process
@@ -814,7 +833,7 @@ Before delivering, verify ALL of these:
 - [ ] **AUCUN fond Evening Blue** — tous blancs, off-white, gradient, ou yellow
 - [ ] **Font = Manrope partout** (ExtraBold 800 pour H1, Bold 700 pour H2, Regular pour body)
 - [ ] **Secondary text in FULL CAPS** with letter spacing (signatures, CTAs, chapeaux)
-- [ ] **Logo transparent** et **ratio respecté** (2:1 wordmark, 1:1 symbol)
+- [ ] **Logo transparent** et **ratio respecté** (2:1 wordmark, 1:1 symbol) — use assets directly, no preprocessing
 - [ ] **Logo and symbol never used as a lock-up** — never combined in one element
 - [ ] **Gradient direction correct**: text = top-left→bottom-right, background = bottom-left→top-right
 - [ ] Bandeau gradient en bas de chaque slide blanc (NOT on gradient/colored bg slides)
@@ -823,16 +842,19 @@ Before delivering, verify ALL of these:
 - [ ] Pas de slide text-only (every slide has a visual element)
 - [ ] Encarts takeaway rose pour conclusions
 - [ ] Section dividers use gradient backgrounds with large white Manrope ExtraBold text
-- [ ] Slide de fin avec logo + CTA
+- [ ] Slide de fin avec logo + CTA (closing message matches deck type — see table)
 - [ ] Langue correcte (FR interne, EN/FR externe)
 - [ ] Contrast rule applied (dark text on light bg, white text on dark/colored bg)
+- [ ] **No hardcoded names** — author info comes from user input only
+- [ ] **Portrait photos NEVER used as full-bleed** — only half-bleed or card crop
+- [ ] **All icons placed via `placeIcon()`** — w === h enforced
 
 ---
 
 ## Troubleshooting
 
 **Logo avec fond noir rectangulaire :**
-→ Script preprocessing non exécuté. Lancer `python scripts/preprocess-logo.py assets/logos/logo-gradient.png /tmp/dayuse-logo-gradient.png`
+→ Les logos actuels sont déjà transparents (RGBA). Si un logo est re-exporté avec fond opaque, lancer `python scripts/preprocess-logo.py <input.png> <output.png>`
 
 **Logo déformé / écrasé :**
 → Ratio non respecté. Wordmark: `h = w / 2`. Symbol: `h = w`.

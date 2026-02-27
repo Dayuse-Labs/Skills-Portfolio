@@ -94,21 +94,37 @@ Creates Dayuse-branded presentations (PPTX) with consistent visual identity and 
 <tr>
 <td width="120" align="center">
 <br>
-<img src="https://img.icons8.com/fluency/96/email.png" width="48"/>
+<img src="https://img.icons8.com/fluency/96/web-design.png" width="48"/>
 <br><br>
 </td>
 <td>
 
-### Dayuse Mail
+### Frontend Design Dayuse
+
+Create production-grade frontend interfaces following the Dayuse brand identity and design system.
+
+**Includes:** Color Palette | Typography (Manrope + MaisonNeue) | Component Patterns | Glass Morphism | Shadow System | Responsive Design
+
+[**View Source**](skills/frontend-design-dayuse/SKILL.md)
+
+</td>
+</tr>
+<tr>
+  <td width="120" align="center"><br>
+    <img src="https://img.icons8.com/fluency/96/email.png" width="48"/>
+<br><br>
+    
+  </td>
+  <td>
+    ### Dayuse Mail
 
 Modernisation des emails transactionnels : DTO typés, Builders dédiés et templates `.dto.html.twig` à zéro logique métier.
 
 **Includes:** DTO Pattern | Final Readonly Classes | Typed Builders | `.dto.html.twig` Templates | Zero Business Logic in Twig
 
 [**View Source**](skills/dayuse-mail/SKILL.md)
-
-</td>
-</tr>
+  </td>
+  </tr>
 </table>
 
 ---
@@ -204,6 +220,9 @@ skills-portfolio/
 │   │   └── scripts/              # Asset preprocessing (logo transparency)
 │   └── dayuse-mail/
 │       └── SKILL.md              # Transactional email DTO pattern
+│   └── frontend-design-dayuse/
+│       ├── SKILL.md              # Dayuse frontend design system
+│       └── references/           # Design tokens, component patterns, font
 ├── version.txt                    # Current version (managed by release-please)
 └── README.md
 ```
