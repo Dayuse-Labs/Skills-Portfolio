@@ -109,6 +109,22 @@ Create production-grade frontend interfaces following the Dayuse brand identity 
 
 </td>
 </tr>
+<tr>
+  <td width="120" align="center"><br>
+    <img src="https://img.icons8.com/fluency/96/email.png" width="48"/>
+<br><br>
+    
+  </td>
+  <td>
+    ### Dayuse Mail
+
+Modernisation des emails transactionnels : DTO typés, Builders dédiés et templates `.dto.html.twig` à zéro logique métier.
+
+**Includes:** DTO Pattern | Final Readonly Classes | Typed Builders | `.dto.html.twig` Templates | Zero Business Logic in Twig
+
+[**View Source**](skills/dayuse-mail/SKILL.md)
+  </td>
+  </tr>
 </table>
 
 ---
@@ -202,6 +218,8 @@ skills-portfolio/
 │   │   ├── assets/               # Brand logos, photos, icons, brand guide
 │   │   ├── references/           # Icon catalog, detailed guides
 │   │   └── scripts/              # Asset preprocessing (logo transparency)
+│   └── dayuse-mail/
+│       └── SKILL.md              # Transactional email DTO pattern
 │   └── frontend-design-dayuse/
 │       ├── SKILL.md              # Dayuse frontend design system
 │       └── references/           # Design tokens, component patterns, font
