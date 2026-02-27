@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.0](https://github.com/Dayuse-Labs/Skills-Portfolio/compare/v1.2.0...v1.3.0) (2026-02-27)
+
+
+### Features
+
+* **Dayuse Mail:** Add new SKILL dayuse-mail ([c735ca8](https://github.com/Dayuse-Labs/Skills-Portfolio/commit/c735ca8ff9aecafbd40fb033740d2a541d46f56b))
+* **Dayuse Mail:** Add new SKILL dayuse-mail ([21e87bc](https://github.com/Dayuse-Labs/Skills-Portfolio/commit/21e87bcb8514673e2402bd87b8fe33f7a3540616))
+
+
+### Documentation
+
+* add dayuse-mail skill to README ([f3c53e6](https://github.com/Dayuse-Labs/Skills-Portfolio/commit/f3c53e6a94ab4a724f1e492d5a56e3549bdad951))
+
 ## [1.2.0](https://github.com/Dayuse-Labs/Skills-Portfolio/compare/v1.1.0...v1.2.0) (2026-02-26)
 
 
