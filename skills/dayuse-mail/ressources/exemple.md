@@ -1,8 +1,8 @@
-# Dayuse Mail — Exemples de référence
+# Dayuse Mail — Reference Examples
 
-Exemples de code complets pour le pattern DTO. Voir `SKILL.md` pour les principes et conventions.
+Complete code examples for the DTO pattern. See `SKILL.md` for principles and conventions.
 
-## DTO racine — Exemple complet
+## Root DTO — Complete Example
 
 ```php
 <?php
@@ -51,12 +51,12 @@ final readonly class R7DTO
 }
 ```
 
-## Objets entiers vs scalaires pré-extraits — Comparaison
+## Whole Objects vs Pre-Extracted Scalars — Comparison
 
-### ❌ Éviter — scalaires pré-extraits par le parent
+### BAD — pre-extracted scalars by the parent
 
 ```php
-// Le parent décompose l'objet en 6 scalaires
+// The parent decomposes the object into 6 scalars
 $hotelInformation = HotelInformationDTO::build(
     hotelName: $hotel->getName(),
     hotelAddress: $hotel->getAddress(),
@@ -68,7 +68,7 @@ $hotelInformation = HotelInformationDTO::build(
 ```
 
 ```php
-// Le DTO reçoit 6 scalaires — il ne sait pas d'où ils viennent
+// The DTO receives 6 scalars — it doesn't know where they come from
 final readonly class HotelInformationDTO
 {
     public function __construct(
@@ -89,15 +89,15 @@ final readonly class HotelInformationDTO
         string $hotelUrl,
         string $contactPhoneNumber,
     ): self {
-        return new self(...); // simple passthrough, pas de valeur ajoutée
+        return new self(...); // simple passthrough, no added value
     }
 }
 ```
 
-### ✅ Préférer — objets entiers, le DTO extrait lui-même
+### GOOD — whole objects, the DTO extracts itself
 
 ```php
-// Le parent passe les objets — signature propre
+// The parent passes objects — clean signature
 $hotelInformation = HotelInformationDTO::build(
     hotel: $hotel,
     domainConfig: $domainConfig,
@@ -105,7 +105,7 @@ $hotelInformation = HotelInformationDTO::build(
 ```
 
 ```php
-// Le DTO extrait ce dont il a besoin — encapsulé
+// The DTO extracts what it needs — encapsulated
 final readonly class HotelInformationDTO
 {
     public function __construct(
@@ -132,9 +132,9 @@ final readonly class HotelInformationDTO
 }
 ```
 
-**Scalaires acceptables** : flags (`bool $isActive`), clés de traduction (`string $title`), valeurs isolées (`string $locale`).
+**Acceptable scalars**: flags (`bool $isActive`), translation keys (`string $title`), isolated values (`string $locale`).
 
-## DTO enfant — Exemple complet
+## Child DTO — Complete Example
 
 ```php
 <?php
@@ -191,7 +191,7 @@ final readonly class BookingHeaderBlockDTO
 }
 ```
 
-## Template enfant — Exemple complet
+## Child Template — Complete Example
 
 ```twig
 {# @var data \Dayuse\Email\DTO\PartDTO\BookingHeaderBlockDTO #}
@@ -222,13 +222,13 @@ final readonly class BookingHeaderBlockDTO
 </table>
 ```
 
-## DTO enfant instancié N fois — Pattern complet
+## Child DTO Instantiated N Times — Complete Pattern
 
-Quand un template parent inclut le **même template enfant N fois** avec des données différentes.
+When a parent template includes the **same child template N times** with different data.
 
-Voir `BookingInfosReinsuranceDTO` et `BookingInfosReinsuranceItemDTO` dans le code pour un exemple réel de ce pattern.
+See `BookingInfosReinsuranceDTO` and `BookingInfosReinsuranceItemDTO` in the code for a real example of this pattern.
 
-### DTO parent
+### Parent DTO
 
 ```php
 final readonly class BookingInfosReinsuranceDTO
@@ -249,7 +249,7 @@ final readonly class BookingInfosReinsuranceDTO
 }
 ```
 
-### Template parent
+### Parent Template
 
 ```twig
 {{ include('@emails/_parts/booking_infos/reinsurance/reinsurance_item.dto.html.twig', { data: data.cancellationItem }) }}
@@ -258,11 +258,11 @@ final readonly class BookingInfosReinsuranceDTO
 {% endif %}
 ```
 
-**Règle** : la règle « un DTO = un seul template » s'applique au **type** de DTO, pas au nombre d'instances. `BookingInfosReinsuranceItemDTO::build()` peut être appelé N fois pour produire N instances de `BookingInfosReinsuranceItemDTO`.
+**Rule**: the rule "one DTO = one template" applies to the DTO **type**, not the number of instances. `BookingInfosReinsuranceItemDTO::build()` can be called N times to produce N instances of `BookingInfosReinsuranceItemDTO`.
 
-## Notifier — Avant / Après
+## Notifier — Before / After
 
-### Avant (ancien pattern)
+### Before (old pattern)
 
 ```php
 $dto = new R7OrderConfirmedHotelEmailDTO(
@@ -277,7 +277,7 @@ $message = (new OrderMessageBuilder($this->translator, $order))
     ->build();
 ```
 
-### Après (nouveau pattern)
+### After (new pattern)
 
 ```php
 $dto = R7DTO::build($order, $hotel, $language);
@@ -287,5 +287,5 @@ $message = (new OrderMessageBuilder($this->translator, $order))
     ->build();
 ```
 
-- Remplacer `$dto->__toArray()` par `['data' => $dto]`.
-- Remplacer le chemin template `.html.twig` par `.dto.html.twig`.
+- Replace `$dto->__toArray()` with `['data' => $dto]`.
+- Replace the template path `.html.twig` with `.dto.html.twig`.
