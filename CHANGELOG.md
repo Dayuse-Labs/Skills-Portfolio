@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.0](https://github.com/Dayuse-Labs/Skills-Portfolio/compare/v1.3.0...v1.4.0) (2026-03-06)
+
+
+### Features
+
+* **Skill:** [dayuse-mail] Add recursivity ([606999d](https://github.com/Dayuse-Labs/Skills-Portfolio/commit/606999d52ec1571890eeae4ffd9142b0a58ef8a2))
+* **Skill:** [dayuse-mail] Add recursivity ([4870498](https://github.com/Dayuse-Labs/Skills-Portfolio/commit/487049885e08f5bb16419bbf5c78bf183464757d))
+* **Skill:** [dayuse-mail] Retours ([9625639](https://github.com/Dayuse-Labs/Skills-Portfolio/commit/9625639bcc6c25bb3079656d80cb499977f923b9))
+
 ## [1.3.0](https://github.com/Dayuse-Labs/Skills-Portfolio/compare/v1.2.0...v1.3.0) (2026-02-27)
 
 
