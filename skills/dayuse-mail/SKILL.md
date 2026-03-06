@@ -1,171 +1,219 @@
 ---
 name: dayuse-mail
-description: "Use when a Twig template uses `reservationData` or `array<string, mixed>`, when a Notifier calls `$dto->__toArray()`, or when creating a new transactional email template `.dto.html.twig`."
+description: "Use when a Twig template uses `reservationData` or `array<string, mixed>`, when a Twig template receives variables via `include` parameters, when a Notifier calls `$dto->__toArray()`, or when creating a new transactional email template `.dto.html.twig`."
 ---
 
-# Dayuse Mail — Pattern DTO
+# Dayuse Mail — DTO Pattern
 
 ## Overview
 
-Pattern de modernisation des emails transactionnels Dayuse : remplacer les tableaux non structurés (`reservationData`, `array<string, mixed>`) par des DTO PHP strictement typés (`final readonly class`), des Builders dédiés et des templates `.dto.html.twig` à zéro logique métier.
+Modernization pattern for Dayuse transactional emails: replace unstructured arrays (`reservationData`, `array<string, mixed>`) with strictly typed PHP DTOs (`final readonly class`) with a static `build()` method, and `.dto.html.twig` templates with zero business logic.
 
-## Quand utiliser ce Skill
+## When to Use This Skill
 
-- Refactoring d'anciens templates d'emails transactionnels (`.html.twig`).
-- Migration de templates vers l'extension `.dto.html.twig`.
-- Remplacement du tableau global non structuré `reservationData` (et des autres tableaux `array<string, mixed>`) par des DTO spécifiques avec des propriétés typées.
-- Construction de classes Builder (`R7DTOBuilder`, etc.) pour assembler les DTO.
-- Mise à jour des Notifiers (`ConfirmationEmailNotifier`, etc.) pour utiliser les builders.
+- Refactoring legacy transactional email templates (`.html.twig`).
+- Migrating templates to the `.dto.html.twig` extension.
+- Replacing the global unstructured array `reservationData` (and other `array<string, mixed>` arrays) with specific DTOs with typed properties.
+- Updating Notifiers (`ConfirmationEmailNotifier`, etc.) to use DTOs and their `build()` method.
 
-### Quand NE PAS utiliser
+### When NOT to Use
 
-- Emails marketing ou newsletters (gérés par un autre système).
-- Templates sans données dynamiques (pas besoin de DTO).
-- Modification d'un template `.html.twig` existant qui n'est pas en cours de migration (ne pas casser les anciens emails).
+- Marketing emails or newsletters (handled by another system).
+- Purely static templates (no Twig variables: no `{{ var }}`, no `{% if var %}`, no parameters received via `include`).
+- Modifying an existing `.html.twig` template that is not being migrated (do not break existing emails).
 
-## Contexte : Ancien vs Nouveau Pattern
+## Current Migration Status
 
-| Critère | Ancien pattern | Nouveau pattern (cible) |
+The migration is **in progress**. The new pattern is applied to child templates (`_parts/`); root templates still follow the old pattern.
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Part DTOs (`PartDTO/`) | Done | `BookingHeaderBlockDTO`, `BookingInfosReinsuranceDTO`, `BookingInfosReinsuranceItemDTO` — **reference patterns** |
+| Part Templates (`.dto.html.twig`) | Done | `booking_header_block.dto.html.twig`, `reinsurance.dto.html.twig`, `reinsurance_item.dto.html.twig` — **reference patterns** |
+| Root DTOs (`DTO/`) | Legacy | `R7OrderConfirmedHotelEmailDTO`, etc. — old naming, `__toArray()`, `reservationData: array`. **Do not use as reference.** |
+| Root Templates (`.dto.html.twig`) | To create | Root templates still in `.html.twig` |
+| Notifiers | To migrate | Still using `$dto->__toArray()` |
+
+**Important**: legacy root DTOs (`R7OrderConfirmedHotelEmailDTO`, `R9CancellationEmailDTO`, `R11OrderUpdateCustomerEmailDTO`, `R12OrderUpdateHotelEmailDTO`) use the old pattern (`private` properties, `__toArray()`, `reservationData: array<string, mixed>`). **Never** use them as reference for creating new DTOs. Only use Part DTOs as reference.
+
+## Reference Models
+
+Existing files to use as models when creating new DTOs/Templates:
+
+| Type | Reference File |
+|------|---------------|
+| Child DTO | `src/Email/DTO/PartDTO/BookingHeaderBlockDTO.php` |
+| Child Template | `templates/transactional-emails/_parts/booking_header_block.dto.html.twig` |
+| Root DTO | See `ressources/exemple.md` (no reference in the codebase yet) |
+
+Complete code examples in `ressources/exemple.md`.
+
+## Context: Old vs New Pattern
+
+| Criterion | Old pattern | New pattern (target) |
 |---|---|---|
-| Extension template | `.html.twig` | `.dto.html.twig` |
-| Variable Twig | `reservationData.xxx`, `language`, etc. (variables plates) | `data.xxx` (une seule variable typée) |
-| Passage au template | `$dto->__toArray()` | `['data' => $dto]` |
-| Propriétés DTO | `reservationData: array<string, mixed>` | Propriétés typées (ex: `bookingNumber: string`) |
-| Logique dans Twig | Conditions complexes possibles | Zéro logique métier, résultats booléens pré-calculés |
+| Template extension | `.html.twig` | `.dto.html.twig` |
+| Twig variable | `reservationData.xxx`, `language`, etc. (flat variables) | `data.xxx` (single typed variable) |
+| Passing to template | `$dto->__toArray()` | `['data' => $dto]` |
+| DTO properties | `reservationData: array<string, mixed>` | Typed properties (e.g.: `bookingNumber: string`) |
+| Logic in Twig | Complex conditions possible | Zero business logic, pre-computed boolean results |
+| DTO construction | Manual in the Notifier | Static `build()` method in the DTO |
+| `build()` parameters | `array $reservationData` (untyped) | Business objects: `Order`, `Hotel`, `Language`, etc. |
 
 ## Quick Reference
 
-| Élément | Convention |
+| Element | Convention |
 |---------|-----------|
-| Extension template | `.dto.html.twig` |
-| Variable extérieure à Twig | `data` (uniquement) |
-| Typage template | `{# @var data \Dayuse\Email\DTO\XxxDTO #}` |
-| DTO racine | `src/Email/DTO/` |
-| DTO enfant | `src/Email/DTO/PartDTO/` |
-| Builder racine | `src/Email/DTOBuilder/` |
-| Builder enfant | `src/Email/DTOBuilder/Part/` |
-| Passage au template | `['data' => $dto]` |
-| Classe DTO | `final readonly class` |
-| Propriétés DTO | `public` uniquement |
+| Template extension | `.dto.html.twig` |
+| Outer Twig variable | `data` (only) |
+| Template typing | `{# @var data \Dayuse\Email\DTO\XxxDTO #}` |
+| Root DTO | `src/Email/DTO/` |
+| Child DTO | `src/Email/DTO/PartDTO/` |
+| Passing to template | `['data' => $dto]` |
+| DTO class | `final readonly class` |
+| DTO properties | `public` only |
+| DTO construction | `public static function build(...)` in the DTO |
+| `build()` parameters | Business objects (`Order`, `Hotel`, etc.) or scalars — **never** `array` |
 
-## Principes Fondamentaux & Workflow
+## Core Principles & Workflow
 
-### 0. Stratégie Depth-First (Feuilles d'abord)
+### 0. Depth-First Strategy (Leaves First)
 
-**Principe cardinal : toujours traiter les feuilles avant les parents.**
+**Cardinal principle: always scan recursively THEN process leaves before parents.**
 
-Avant de refactoriser un template, identifier **tous** ses templates enfants (via `include`). Si un enfant a lui-même des enfants, descendre encore. Commencer par les feuilles (templates sans `include`) et remonter vers la racine.
+**BEFORE creating any file**, recursively scan the given template: read its content, extract all `include` directives, descend into each child, and build the complete tree. **Display the tree before starting any work.** Without this scan, the parent DTO will be incomplete (missing children).
 
-**Cet ordre s'applique à chaque couche :**
+**Eligibility rule: any template containing Twig variables must be processed (`.dto.html.twig` + DTO pair).**
 
-| Étape | Ordre |
-|-------|-------|
-| Templates | Feuille `.dto.html.twig` → … → Racine `.dto.html.twig` |
-| DTOs | DTO feuille → … → DTO racine (qui imbrique les enfants) |
-| Builders | Builder feuille → … → Builder racine (qui appelle les enfants) |
+A template is eligible as soon as it **receives or uses Twig variables**, regardless of their origin:
+- Variables from `reservationData` or other PHP arrays.
+- Variables passed via `include` parameters (e.g.: `{ imgUrl: ..., text: ... }`).
+- Variables from the parent scope.
 
-**Workflow récursif pour un template donné :**
+> **Common pitfall**: a "leaf" template like `reinsurance_item.html.twig` may seem not to require migration (no `include`, no `reservationData`), but if it receives variables (`imgUrl`, `text`, `isBlack`) via `include` parameters, it **must** be processed.
 
-1. Lister tous les `include` du template.
-2. Pour chaque enfant, appliquer récursivement ce même workflow (étape 1).
-3. Une fois **tous les enfants traités** (template `.dto.html.twig` + DTO + Builder créés), traiter le parent :
-   - Créer le template parent `.dto.html.twig` (qui `include` les enfants déjà migrés).
-   - Créer le DTO parent (qui référence les DTOs enfants comme propriétés typées).
-   - Créer le Builder parent (qui injecte et appelle les Builders enfants).
+Start with leaves (templates without `include`) and work up to the root.
 
-**Exemple — Arbre à 3 niveaux :**
+```dot
+digraph depth_first {
+    rankdir=TB;
+    node [shape=diamond, style=filled, fillcolor="#f9f9f9"];
+    edge [fontsize=10];
+
+    scan [label="Read template\nextract includes", shape=box, fillcolor="#e8f4fd"];
+    has_children [label="Has includes?"];
+    recurse [label="For each child:\napply this workflow", shape=box, fillcolor="#fff3cd"];
+    create [label="Create:\n1. .dto.html.twig template\n2. DTO (with build())", shape=box, fillcolor="#d4edda"];
+
+    scan -> has_children;
+    has_children -> recurse [label="yes"];
+    has_children -> create [label="no (leaf)"];
+    recurse -> create [label="all children\nprocessed"];
+}
+```
+
+**This order applies to each layer:**
+
+| Step | Order |
+|------|-------|
+| Templates | Leaf `.dto.html.twig` -> ... -> Root `.dto.html.twig` |
+| DTOs | Leaf DTO -> ... -> Root DTO (which nests children) |
+
+**Recursive workflow for a given template:**
+
+1. Read the template: list all `include` directives **AND** all Twig variables used (`{{ var }}`, `{% if var %}`, parameters received via `include`).
+2. For each included child, recursively apply this same workflow (step 1).
+3. Once **all children are processed** (`.dto.html.twig` template + DTO created), process the parent:
+   - Create the parent `.dto.html.twig` template (which `include`s the already-migrated children).
+   - Create the parent DTO (which references child DTOs as typed properties and whose `build()` method calls `ChildDTO::build()` for each child).
+
+**Example — 3-level tree:**
 
 ```
-r7-confirmed.html.twig                          ← racine
-  ├── _parts/booking_header_block.html.twig      ← enfant niveau 1
-  │     └── _parts/hotel_info.html.twig          ← feuille (niveau 2)
-  └── _parts/payment_summary.html.twig           ← feuille (niveau 1)
+r7-confirmed.html.twig                          <- root (reservationData, language, ...)
+  +-- _parts/booking_header_block.html.twig      <- child (title, subtitle, ...)
+  |     +-- _parts/reinsurance.html.twig         <- child (reservationData, ...)
+  |           +-- _parts/reinsurance_item.html.twig <- leaf xN (imgUrl, text, isBlack)
+  +-- _parts/payment_summary.html.twig           <- leaf (totalPrice, currency)
 ```
 
-**Ordre de traitement :**
-1. `hotel_info` (feuille) → `HotelInfoDTO` → `HotelInfoDTOBuilder`
-2. `booking_header_block` (ses enfants sont faits) → `BookingHeaderBlockDTO` → `BookingHeaderBlockDTOBuilder`
-3. `payment_summary` (feuille) → `PaymentSummaryDTO` → `PaymentSummaryDTOBuilder`
-4. `r7-confirmed` (tous ses enfants sont faits) → `R7DTO` → `R7DTOBuilder`
+**xN** means the template is included **multiple times** in its parent with different data each time. See the section [Child DTO instantiated multiple times](#child-dto-instantiated-multiple-times-n-instances).
 
-**Interdit :**
-- Créer un DTO parent avant que ses DTOs enfants existent.
-- Créer un Builder parent avant que ses Builders enfants existent.
-- Créer un template parent `.dto.html.twig` qui `include` un enfant non encore migré.
+**Processing order:**
+1. `reinsurance_item` (leaf xN) -> `BookingInfosReinsuranceItemDTO`
+2. `reinsurance` (its children are done) -> `BookingInfosReinsuranceDTO`
+3. `booking_header_block` (its children are done) -> `BookingHeaderBlockDTO`
+4. `payment_summary` (leaf) -> `PaymentSummaryDTO`
+5. `r7-confirmed` (all its children are done) -> `R7DTO`
+
+**Forbidden (depth-first):**
+- Creating a file (template, DTO) without having recursively scanned the `include` directives first.
+- Ignoring an `include` found in a template.
+- Ignoring a child template on the grounds that it does not contain `reservationData` — if it has variables, it must be processed.
+- Creating a parent DTO before its child DTOs exist.
+- Creating a `.dto.html.twig` template that `include`s a child **with variables** that has not yet been migrated (`.html.twig`). Static templates (without Twig variables) remain as `.html.twig`.
 
 ### 1. Templating (`.dto.html.twig`)
 
-- **Convention de nommage** : Suffixe `.dto.html.twig` (ex: `r7-confirmed.dto.html.twig`, `manage_cb_block.dto.html.twig`).
-- **Ne jamais modifier** ou **supprimer** les templates originaux `.html.twig` — les créer à côté en `.dto.html.twig`.
-- **Typage PHP DocBlock** : Toujours typer `data` en première ligne du fichier :
+- **Naming convention**: `.dto.html.twig` suffix (e.g.: `r7-confirmed.dto.html.twig`, `manage_cb_block.dto.html.twig`).
+- **Never modify** or **delete** the original `.html.twig` templates — create the new ones alongside them as `.dto.html.twig`.
+- **Structural fidelity**: The `.dto.html.twig` template must preserve the same HTML structure and display logic as the original. Replace `reservationData.xxx` accesses with `data.xxx`, PHP constant comparisons (`constant(...)`) with DTO booleans, and flat variables with DTO properties — but do not rewrite the template structure. `include`s remain `include`s (pointing to `.dto.html.twig` versions), loops remain loops, etc.
+- **PHP DocBlock typing**: Always type `data` on the first line of the file:
 
 ```twig
-{# @var data \Dayuse\Email\DTO\R7DTO #}
+{# @var data \Dayuse\Email\DTO\PartDTO\BookingHeaderBlockDTO #}
 ```
 
-- Un seul typage par template. La variable est **toujours** nommée `data`.
-- **Zéro logique métier** : Pas de calcul, pas de condition complexe. Les filtres Twig de formatage sont autorisés (`format_date`, `formatPrice`, `trans`, etc.).
-- **Accès aux données** : `data.bookingNumber`, `data.hotelName`, `data.isPrepaid`, etc.
-- **Logique déportée en PHP** : Les conditions Twig complexes deviennent des booléens sur le DTO.
-- Les templates ont la responsabilité de traduire les clés de traduction.
-- Toutes les données utilisées dans le template sont déclarées dans le DTO du template, ou initialisées dans le template lui-même (via `{% set %}` avec logique calculée).
-- Les variables déclarées avec `{% set %}` sont obligatoirement utilisées dans le template.
-- Interdit : initialiser une variable sans logique ajoutée.
+- One typing per template. The variable is **always** named `data`.
+- **Zero business logic**: No computation, no complex conditions. Twig formatting filters are allowed (`format_date`, `formatPrice`, `trans`, etc.).
+- **Data access**: `data.bookingNumber`, `data.hotelName`, `data.isPrepaid`, etc.
+- **Logic moved to PHP**: Complex Twig conditions become booleans on the DTO.
+- Templates are responsible for translating translation keys.
+- All data used in the template is declared in the template's DTO, or initialized in the template itself (via `{% set %}` with computed logic).
+- Variables declared with `{% set %}` must be used in the template.
+- Forbidden: initializing a variable without added logic.
 
 ```twig
-{# ✅ OK — set avec logique calculée #}
+{# OK — set with computed logic #}
 {% set totalWithTax = data.price + data.tax %}
 
-{# ❌ INTERDIT — set sans valeur ajoutée #}
+{# FORBIDDEN — set without added value #}
 {% set hotelName = data.hotelName %}
 ```
 
-**Exemple — Template enfant :**
-```twig
-{# @var data \Dayuse\Email\DTO\PartDTO\BookingHeaderBlockDTO #}
-{% trans_default_domain 'transactional_emails' %}
+### 2. Nesting & Child Templates
 
-<table>
-    <tr>
-        <td>{{ data.hotelName }}</td>
-        <td>{{ data.bookingNumber }}</td>
-        <td>{{ data.checkInDate|format_date('short', locale=data.locale) }}</td>
-    </tr>
-    {% if data.isPrepaid %}
-        <tr><td>{{ 'email.prepaid.label'|trans }}</td></tr>
-    {% endif %}
-</table>
-```
-
-### 2. Imbrication & Templates Enfants
-
-Lorsqu'un template parent inclut un composant enfant, passer explicitement le DTO imbriqué :
+When a parent template includes a child component, explicitly pass the nested DTO:
 
 ```twig
 {{ include('@emails/_parts/booking_header_block.dto.html.twig', { data: data.bookingHeader }) }}
 ```
 
-- Dupliquer `_parts/xyz.html.twig` → `_parts/xyz.dto.html.twig` et refactoriser le nouveau.
-- Ne jamais modifier l'original pour ne pas casser les anciens emails qui en dépendent.
+- Duplicate `_parts/xyz.html.twig` -> `_parts/xyz.dto.html.twig` and refactor the new one.
+- Never modify the original to avoid breaking existing emails that depend on it.
+
+#### Child DTO Instantiated Multiple Times (N Instances)
+
+When a parent template includes the **same child template N times** with different data, the parent DTO declares **one typed property per instance** of the child DTO (nullable if conditional). The parent DTO's `build()` method calls `ChildDTO::build()` **once per instance**.
+
+The rule "one DTO = one template" applies to the DTO **type**, not the number of instances. `ReinsuranceItemDTO::build()` can be called N times to produce N instances of `ReinsuranceItemDTO`.
+
+See `ressources/exemple.md` section "Child DTO instantiated N times" for the complete example (DTO + template).
 
 ### 3. Data Transfer Objects (DTOs)
 
-**Deux types de DTO :**
-- **DTO racine** — appliqué au template appelé depuis une classe PHP.
-- **DTO enfant** — déclaré par un DTO racine ou un autre DTO enfant.
+**Two types of DTO:**
+- **Root DTO** — applied to the template called from a PHP class.
+- **Child DTO** — declared by a root DTO or another child DTO.
 
-**Emplacements :**
-- DTO racine (template principal) : `src/Email/DTO/`
-- DTO enfant (template `_parts/`) : `src/Email/DTO/PartDTO/`
+**Locations:**
+- Root DTO (main template): `src/Email/DTO/`
+- Child DTO (`_parts/` template): `src/Email/DTO/PartDTO/`
 
-**Structure obligatoire :**
+**Required structure:**
 
 ```php
-<?php
-
-declare(strict_types=1);
-
-namespace Dayuse\Email\DTO;
+// Simplified example — see ressources/exemple.md for the complete example
 
 /**
  * @see templates/transactional-emails/hotel/reservation/r7-confirmed.dto.html.twig
@@ -174,170 +222,201 @@ final readonly class R7DTO
 {
     public function __construct(
         public string $bookingNumber,
-        public string $hotelName,
         public bool $isPrepaid,
-        public \DateTimeImmutable $checkInDate,
-        public \DateTimeImmutable $checkOutDate,
-        public string $locale,
-        public BookingHeaderDTO $bookingHeader,
+        public BookingHeaderBlockDTO $bookingHeader,
         public ?string $taxInformation,
     ) {
     }
-}
-```
 
-**Règles :**
-- `final readonly class` — toujours.
-- **Propriétés `public`** — obligatoire pour que Twig puisse y accéder via `data.property`.
-- Typage natif PHP sur chaque propriété. Pas de `array<string, mixed>`, pas de `mixed`.
-- Les noms de propriétés correspondent exactement aux noms utilisés dans le template.
-- Pas de traduction dans le DTO — uniquement les clés de traduction sous forme de `string`.
-- Un DTO = un seul template.
-- Indique en commentaire le template auquel il s'applique
-- Pas de tableau, uniquement des objets, qui seront dans le dossier `src/Email/DTO/`
-
-#### Nommage
-
-- Le DTO reprend le nom du template sur lequel il s'applique, au singulier.
-- Si le template racine : `hotel/reservation/r7-confirmed.dto.html.twig` => `R7DTO`
-- Si le template est dans un sous-dossier de `transactional-emails/`, les dossiers parents sont préfixés :
-
-| Template | DTO |
-|---|---|
-| `_parts/booking_header_block.dto.html.twig` | `BookingHeaderBlockDTO` |
-| `_parts/payment/_parts/inclusive_taxes.dto.html.twig` | `PaymentInclusiveTaxesDTO` |
-
-### 4. DTOBuilder
-
-#### Type de builder
-**Deux types de builders :**
-- **Builder racine** — builder du template appelé depuis une classe PHP.
-- **Builder enfant** — appelé par le builder racine ou un autre builder enfant.
-**Exemple :**
-- Le template `hotel/reservation/r7-confirmed.dto.html.twig` => `R7DTO` => `R7DTOBuilder`, c'est un builder racine
-- Le template `_parts/booking_header_block.dto.html.twig` => `BookingHeaderBlockDTO` => `BookingHeaderBlockDTOBuilder`, c'est un builder enfant
-
-#### Emplacement
-- Les builders racines sont dans `src/Email/DTOBuilder/`.
-- Les builders enfants sont dans `src/Email/DTOBuilder/Part/`.
-  **Exemple :**
-- Le builder `R7DTOBuilder` => `src/Email/DTOBuilder/`
-- Le builder `BookingHeaderBlockDTOBuilder` => `src/Email/DTOBuilder/Part/`
-
-**Nommage :** `[NomDuDTO]Builder` (ex: `R7DTOBuilder`).
-
-**Règles :**
-- Méthode `build()` avec les paramètres nécessaires à l'assemblage (objets métier : `Order`, `DomainConfig`, `Language`, etc. ou scalaires sans calcul préalable).
-- **Interdit** : prendre en paramètre des données issues de `\Dayuse\Order\Service\OrderInfoViewModelBuilder::getInfo()`.
-- **Interdit** : calculer les données des DTO enfants — appeler leurs builders respectifs.
-- **Construction récursive depth-first** : le builder parent appelle les builders enfants, qui appellent leurs propres builders enfants, et ainsi de suite jusqu'aux feuilles. Un builder ne construit **jamais** le DTO d'un autre niveau — il délègue toujours au builder du niveau inférieur.
-- Pas de traduction dans le builder.
-- Chaque DTO a un builder, un builder ne peut pas construire plus d'un DTO.
-- Le builder racine reçoit par injection (DI Symfony) les builders enfants dont il a besoin.
-- **Calculs dupliqués acceptés** : si deux DTOs distincts ont besoin de la même information calculée (ex: `isPrepaidPayment`), chaque builder calcule cette information indépendamment. On ne partage pas de données calculées entre builders.
-
-**Exemple :**
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace Dayuse\Email\DTOBuilder;
-
-use Dayuse\Email\DTO\R7DTO;
-use Dayuse\Email\DTOBuilder\Part\BookingHeaderBlockDTOBuilder;
-use Dayuse\Hotels\Entity\Hotel;
-use Dayuse\Locale\Entity\Language;
-use Dayuse\Order\Entity\Order;
-
-final readonly class R7DTOBuilder
-{
-    public function __construct(
-        private readonly BookingHeaderBlockDTOBuilder $bookingHeaderBuilder,
-    ) {
-    }
-
-    public function build(Order $order, Hotel $hotel, Language $language): R7DTO
+    public static function build(Order $order, Hotel $hotel, Language $language): self
     {
-        $orderItem = $order->getParentOrderItem();
-
-        return new R7DTO(
+        // ... data assembly
+        return new self(
             bookingNumber: $order->getBookingNumber(),
-            hotelName: $hotel->getName(),
             isPrepaid: $order->isPrepaid(),
-            checkInDate: \DateTimeImmutable::createFromMutable($orderItem->getCheckinDatetime()),
-            checkOutDate: \DateTimeImmutable::createFromMutable($orderItem->getCheckoutDatetime()),
-            locale: $language->getLocale(),
-            bookingHeader: $this->bookingHeaderBuilder->build($order, $hotel, $language),
+            bookingHeader: BookingHeaderBlockDTO::build($order, $hotel, $language),
             taxInformation: $hotel->willCollectLocalSalesTax() ? 'email.tax.information' : null,
         );
     }
 }
 ```
 
-### 5. Notifiers
+See `ressources/exemple.md` for complete root and child DTO examples.
 
-Remplacer le passage de `$dto->__toArray()` par `['data' => $dto]` :
+**Rules:**
+- `final readonly class` — always.
+- **`public` properties** — required so Twig can access them via `data.property`.
+- Native PHP typing on each property. No `array<string, mixed>`, no `mixed`.
+- Property names match exactly the names used in the template.
+- No translation in the DTO — only translation keys as `string`. The `build()` method constructs these keys and their parameters; the template translates them with `|trans`.
+- One DTO = one template.
+- Includes a `@see` comment referencing the template it applies to.
+- No arrays, only objects, which go in the `src/Email/DTO/` directory.
 
-**Avant (ancien pattern) :**
+#### Static `build()` Method
+
+Each DTO contains a `public static function build(...)` method that assembles the DTO from business objects.
+
+**`build()` rules:**
+- Parameters: business objects (`Order`, `Hotel`, `DomainConfig`, `Language`, `OrderItem`, etc.) or scalars without prior computation.
+- **Prefer whole objects over pre-extracted scalars** — when a `build()` needs multiple properties from the same object, pass the whole object. It is the DTO's `build()` that extracts what it needs, not the caller. Scalars are reserved for values that do not come from a single business object (flags, computed URLs, translation keys).
+- **Recursive depth-first construction**: the parent DTO's `build()` method calls `ChildDTO::build()` for each child DTO. A DTO **never** constructs a child DTO directly via `new ChildDTO(...)` — it always delegates to `ChildDTO::build()`.
+- **No translation in `build()`** — never call `->trans()`. However, `build()` **can and should** construct translation keys (`string`) and their parameters so the template can translate them with `|trans`.
+- **Duplicate computations accepted**: if two distinct DTOs need the same computed information (e.g.: `isPrepaidPayment`), each `build()` computes it independently. Computed data is not shared between DTOs.
+
+#### Prefer Whole Objects Over Pre-Extracted Scalars
+
+When a DTO needs multiple properties from the same business object, pass **the whole object** to `build()`. Each DTO is responsible for extracting the data it needs — it is not the parent's role to decompose the object into scalars.
+
 ```php
-$dto = new R7DTO(..., reservationData: $this->orderInfoViewModelBuilder->getInfo(...), ...);
+// BAD — parent pre-extracts all scalars
+HotelInformationDTO::build(
+    hotelName: $hotel->getName(),
+    hotelAddress: $hotel->getAddress(),
+    hotelRating: $hotel->getStarRating(),
+    hotelUrl: $hotel->getUrl(),
+    contactPhoneNumber: $domainConfig->getContactPhoneNumber(),
+);
 
-$message = (new OrderMessageBuilder($this->translator, $order))
-    ->withBody('@emails/hotel/reservation/r7-confirmed.html.twig', $dto->__toArray())
-    ->build();
+// GOOD — pass objects, the DTO extracts itself
+HotelInformationDTO::build(
+    hotel: $hotel,
+    domainConfig: $domainConfig,
+);
 ```
 
-**Après (nouveau pattern) :**
-```php
-$dto = $this->r7DtoBuilder->build($order, $hotel, $language);
+**Why:**
+- **Clean signatures**: 2 parameters instead of 6. The parent does not need to know the child DTO's internal details.
+- **Encapsulation**: if the child DTO needs an additional field tomorrow, only its `build()` changes — not all callers.
+- **Avoids the array temptation**: when the parent must pre-extract 10+ scalars, the temptation to pass an `array` instead is strong. Passing the whole object eliminates this need.
 
-$message = (new OrderMessageBuilder($this->translator, $order))
-    ->withBody('@emails/hotel/reservation/r7-confirmed.dto.html.twig', ['data' => $dto])
-    ->build();
+**When to use scalars:**
+- Values that do not come from a single object: flags (`isForHotel`, `isActive`), computed URLs, translation keys (`$title`, `$subtitle`).
+- Value from a single isolated getter (e.g.: `string $locale` extracted from `Language::getLocale()`).
+
+#### FORBIDDEN — `reservationData` and Untyped Arrays in `build()`
+
+**No DTO (root OR child) may accept `array $reservationData` or `array<string, mixed>` as a `build()` parameter.** This is the exact problem this migration solves — an unstructured, untyped array. Replacing it with another unstructured array solves nothing.
+
+**This applies to ALL DTOs — including the root DTO.** The fact that the Notifier uses `reservationData` internally does not justify passing it to the DTO. The root DTO must receive business objects and extract data itself.
+
+```php
+// FORBIDDEN — untyped array as parameter
+public static function build(array $reservationData, string $locale): self
+{
+    return new self(
+        bookingNumber: $reservationData['bookingNumber'],     // <- no typing
+        hotelName: $reservationData['hotel']['name'],          // <- fragile nested access
+    );
+}
+
+// FORBIDDEN — even if the array is enriched/transformed
+$reservationDataEnriched = $reservationData;
+$reservationDataEnriched['checkinDateFormatted'] = $formatted;
+BookingDetailsBlockDTO::build(reservationData: $reservationDataEnriched);
+
+// FORBIDDEN — even a subset of the array
+public static function build(array $hotelData): self  // <- still an array<string, mixed>
+
+// CORRECT — typed business objects
+public static function build(Order $order, Hotel $hotel, Language $language): self
+{
+    $orderItem = $order->getParentOrderItem();
+    return new self(
+        bookingNumber: $order->getBookingNumber(),
+        hotelName: $hotel->getName(),
+    );
+}
 ```
 
-- Injecter les builders via le constructeur du Notifier.
+**Common rationalizations (all invalid):**
 
-## Checklist de migration d'un email
+| Excuse | Reality |
+|--------|---------|
+| "The Notifier already uses `reservationData`, it's simpler to pass it" | The goal of the migration is precisely to eliminate `reservationData`. The root DTO receives `Order`, `Hotel`, `Language` from the Notifier. |
+| "The root DTO is different, it can accept the array" | No. No DTO — root or child — accepts an array. The root DTO is the migration entry point: it receives entities and distributes them to children. |
+| "I'm just passing the array through, I'm not the one calling `getInfo()`" | `$reservationData` IS the result of `getInfo()`. Passing it through perpetuates the old pattern. |
+| "It's temporary, we'll refactor later" | No. The DTO is created once, correctly, with business objects. |
+| "There are too many fields to extract from entities" | Entities expose typed getters. It's more initial code, but that's the point: replacing `['key']` accesses with typed calls. |
 
-### Phase 1 — Cartographie (top-down)
+**Red flags — STOP and fix:**
+- `array $reservationData` in a `build()` signature
+- `array<string, mixed>` in a `@param` of `build()`
+- `$reservationData['xxx']` in a `build()` body
+- A parent DTO that enriches an array before passing it to a child
+- A `build()` that takes an array and extracts sub-keys (`$data['hotel']['name']`)
 
-1. [ ] Identifier le template racine original (`.html.twig`) et les variables Twig qu'il utilise.
-2. [ ] Identifier toutes les propriétés de `reservationData` utilisées dans le template.
-3. [ ] Lister **tous** les `include` du template (enfants directs).
-4. [ ] Pour chaque enfant, lister récursivement ses propres `include` → construire l'arbre complet.
-5. [ ] Identifier les feuilles (templates sans `include`).
+#### Naming
 
-### Phase 2 — Construction récursive (bottom-up, feuilles d'abord)
+The DTO takes the name of the template it applies to, in PascalCase, suffixed with `DTO`.
 
-**Pour chaque template, en partant des feuilles et en remontant vers la racine :**
+| Template | DTO |
+|---|---|
+| `hotel/reservation/r7-confirmed.dto.html.twig` | `R7DTO` |
+| `customer/reservation/r9-cancelled.dto.html.twig` | `R9CancelledDTO` |
+| `_parts/booking_header_block.dto.html.twig` | `BookingHeaderBlockDTO` |
+| `_parts/payment/_parts/inclusive_taxes.dto.html.twig` | `PaymentInclusiveTaxesDTO` |
 
-6. [ ] Créer le template `.dto.html.twig` (copie refactorisée) — ne pas modifier l'original.
-7. [ ] Créer le DTO correspondant (`src/Email/DTO/PartDTO/` pour les enfants, `src/Email/DTO/` pour la racine).
-8. [ ] Créer le Builder correspondant (`src/Email/DTOBuilder/Part/` pour les enfants, `src/Email/DTOBuilder/` pour la racine).
-9. [ ] Si le template a des enfants : vérifier que le DTO référence les DTOs enfants comme propriétés typées et que le Builder injecte et appelle les Builders enfants.
+> **Legacy warning**: existing root DTOs (`R7OrderConfirmedHotelEmailDTO`, `R9CancellationEmailDTO`, etc.) follow old verbose naming. **New** DTOs must follow the convention above. When fully migrating a root template, create a new DTO with the correct naming.
 
-**Répéter les étapes 6-9 en remontant l'arbre jusqu'au template racine.**
+### 4. Notifiers
 
-### Phase 3 — Intégration
+Replace passing `$dto->__toArray()` with `['data' => $dto]`:
 
-10. [ ] Mettre à jour le Notifier pour utiliser le builder racine et passer `['data' => $dto]`.
-11. [ ] Vérifier PHPStan niveau 10 (`inv phpstan`).
-12. [ ] Vérifier le lint Twig (`inv lint`).
+```php
+// Before: $dto->__toArray() + .html.twig template
+->withBody('@emails/.../r7-confirmed.html.twig', $dto->__toArray())
 
-## Erreurs fréquentes
+// After: DTO::build() + .dto.html.twig template
+$dto = R7DTO::build($order, $hotel, $language);
+->withBody('@emails/.../r7-confirmed.dto.html.twig', ['data' => $dto])
+```
 
-| Erreur | Correction |
-|--------|-----------|
-| `private string $bookingNumber` dans le DTO | `public string $bookingNumber` — Twig ne peut pas accéder aux propriétés privées |
-| Builder appelle `OrderInfoViewModelBuilder::getInfo()` | Builder reçoit `Order`, `Hotel`, `Language` en paramètre direct |
-| Template enfant inclus sans passer le sous-DTO | `{ data: data.bookingHeader }` — toujours passer le DTO enfant explicitement |
-| `{% set hotelName = data.hotelName %}` sans logique | Supprimer — les `{% set %}` sans valeur ajoutée sont interdits |
-| Méthode d'entité devinée (ex: `getStars()`) | Vérifier l'entité réelle — ex: `$hotel->getStarRating()` |
-| Builder enfant calcule une donnée du DTO voisin | Chaque builder calcule indépendamment — les données calculées ne se partagent pas |
-| DTO parent créé avant les DTOs enfants | Respecter l'ordre depth-first : créer les DTOs feuilles d'abord, puis remonter |
-| Builder parent construit le DTO d'un enfant directement | Toujours déléguer au Builder enfant — jamais de `new EnfantDTO(...)` dans le builder parent |
-| Template parent `.dto.html.twig` inclut un enfant non migré (`.html.twig`) | Migrer les enfants d'abord — un template `.dto.html.twig` ne doit inclure que des `.dto.html.twig` |
+- See `ressources/exemple.md` section "Notifier — Before / After" for the complete example.
 
+## Email Migration Checklist
+
+### Phase 1 — Mapping (top-down) — MANDATORY BEFORE ANY CODE
+
+**Apply the recursive scan described in the "Depth-First Strategy" section above.**
+
+1. [ ] Recursively scan the root template (`.html.twig`) and **display the complete tree** (with each template's variables and the xN notation if a child is included multiple times).
+2. [ ] Identify all Twig variables used in **each** template in the tree (including `reservationData`, variables passed via `include`, and parent scope variables). Every template with variables must be processed.
+
+### Phase 2 — Recursive Construction (bottom-up, leaves first)
+
+**For each template, starting from leaves and working up to the root:**
+
+3. [ ] Create the `.dto.html.twig` template (refactored copy) — do not modify the original.
+4. [ ] Create the corresponding DTO with its static `build()` method (`src/Email/DTO/PartDTO/` for children, `src/Email/DTO/` for the root).
+5. [ ] If the template has children: verify the DTO references child DTOs as typed properties and its `build()` method calls `ChildDTO::build()` for each child.
+
+**Repeat steps 3-5, working up the tree to the root template.**
+
+### Phase 3 — Integration
+
+6. [ ] Update the Notifier to call `RootDTO::build(...)` and pass `['data' => $dto]`.
+7. [ ] Verify PHPStan level 10 (`inv phpstan`).
+8. [ ] Verify Twig lint (`inv lint`).
+
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| `private string $bookingNumber` in the DTO | `public string $bookingNumber` — Twig cannot access private properties |
+| Using legacy root DTOs (`R7OrderConfirmedHotelEmailDTO`) as reference | These DTOs follow the old pattern (`__toArray()`, `reservationData: array`). Use Part DTOs (`BookingHeaderBlockDTO`) as reference |
+| `build()` calls `OrderInfoViewModelBuilder::getInfo()` | `build()` receives `Order`, `Hotel`, `Language` as direct parameters |
+| `build(array $reservationData)` — untyped array as parameter | **Forbidden.** `build()` receives business objects (`Order`, `Hotel`, etc.) — never `array<string, mixed>`. See "FORBIDDEN — `reservationData`" section |
+| `$reservationData['hotel']['name']` in a `build()` | Replace with `$hotel->getName()`. Array key access is the problem this migration solves |
+| Root DTO accepting `array $reservationData` "because the Notifier uses it" | The root DTO receives entities from the Notifier and extracts data via getters. The Notifier no longer passes `reservationData` to the DTO |
+| `build(string $hotelName, string $hotelAddress, int $hotelRating, ...)` — pre-extracted scalars from the same object | Pass the whole object: `build(Hotel $hotel, ...)`. The DTO extracts itself via `$hotel->getName()`, etc. See "Prefer whole objects" section |
+| Child template included without passing the sub-DTO | `{ data: data.bookingHeader }` — always pass the child DTO explicitly |
+| `{% set hotelName = data.hotelName %}` without logic | Remove — `{% set %}` without added value is forbidden |
+| Guessed entity method (e.g.: `getStars()`) | Check the actual entity — e.g.: `$hotel->getStarRating()` |
+| Parent DTO's `build()` constructs a child DTO with `new ChildDTO(...)` | Always delegate to `ChildDTO::build()` — never `new ChildDTO(...)` in the parent's `build()` |
+| `.dto.html.twig` template restructured (display logic rewritten) | Preserve the same HTML structure as the original — replace `reservationData` accesses with `data.xxx` and `constant(...)` with booleans, without rewriting the structure |
+| Child DTO created but never instantiated in PHP | Every DTO must be instantiated by its `build()` method and referenced as a typed property in the parent DTO |
+| Child template with variables not migrated (e.g.: `reinsurance_item.html.twig` ignored) | Every template receiving variables (even via `include` parameters) must be migrated — create `.dto.html.twig` + DTO |
+| Child DTO used once when the template is included N times | Declare one typed property **per instance** in the parent DTO — `ChildDTO::build()` is called N times |
+| `.dto.html.twig` template includes a child **with variables** that is not migrated (`.html.twig`) | All children with variables must be migrated first. Static templates (without variables) remain as `.html.twig` |
+| Inline Twig hash instead of a child DTO: `{ data: { imgUrl: '...', text: '...' } }` | Pass a DTO instance: `{ data: data.childProperty }`. Inline hashes bypass PHP typing and the `ChildDTO::build()` pattern |
